@@ -70,8 +70,8 @@ export default function LoginPage({ onSignedIn }: { onSignedIn: (user: AdminUser
         <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/30 to-ink-950/60" />
         <div className="relative flex h-full flex-col justify-between p-12">
           <img src="/brand/pdn-logo-light.png" alt="PDN Travel" className="h-12 w-fit" />
-          <div className="flex max-w-md flex-col gap-3">
-            <p className="text-caps text-red-400">Admin panel</p>
+          <div className="mx-auto flex max-w-md flex-col items-center gap-3 text-center">
+            <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-red-400">Admin panel</p>
             <h1 className="text-display-l text-fg">
               Manage every <em className="text-red-500">journey</em>
             </h1>
