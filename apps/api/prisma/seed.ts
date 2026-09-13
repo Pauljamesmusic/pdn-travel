@@ -39,6 +39,17 @@ function sectionsFor(trip: SeedTrip) {
 }
 
 async function main() {
+  // Safe to run on every deploy: only seeds a genuinely empty database. Once there is
+  // real content (including anything added or edited from the admin panel), this is a
+  // no-op — admin edits are never overwritten. Pass --force to wipe and reseed anyway.
+  const alreadySeeded = (await prisma.continent.count()) > 0;
+  if (alreadySeeded && !process.argv.includes('--force')) {
+    console.log('Database already has content — skipping the demo reseed so admin edits are kept.');
+    console.log('(Run `tsx prisma/seed.ts --force`, i.e. `npm run db:reset`, to wipe and reseed on purpose.)');
+    await ensureOwner();
+    return;
+  }
+
   console.log('Clearing content tables…');
   await prisma.$transaction([
     prisma.enquiry.deleteMany(),
@@ -158,6 +169,12 @@ async function main() {
     ],
   });
 
+  await ensureOwner();
+  console.log(`Done: ${continents.length} continents, ${countries.length} countries, ${activities.length} activities, ${allTrips.length} trips, ${pages.length} pages.`);
+}
+
+/** Creates the owner account from env if it doesn't exist yet. Safe to call every time. */
+async function ensureOwner() {
   const email = (process.env.ADMIN_EMAIL ?? 'admin@pdntravel.com').toLowerCase();
   const password = process.env.ADMIN_PASSWORD;
   const existing = await prisma.adminUser.findUnique({ where: { email } });
@@ -177,8 +194,6 @@ async function main() {
   } else {
     console.log(`Owner account ${email} already exists — password unchanged`);
   }
-
-  console.log(`Done: ${continents.length} continents, ${countries.length} countries, ${activities.length} activities, ${allTrips.length} trips, ${pages.length} pages.`);
 }
 
 main()

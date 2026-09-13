@@ -5,7 +5,10 @@ services:
     plan: free
     region: oregon
     healthCheckPath: /api/health
-    buildCommand: npm install --include=dev && npm run db:reset -w apps/api && npm run build
+    # db:push syncs the schema without dropping data; db:seed only fills in a genuinely
+    # empty database (or the owner account, if that's the only thing missing) — neither
+    # step ever touches existing content, so admin edits survive every deploy.
+    buildCommand: npm install --include=dev && npm run db:push -w apps/api && npm run db:seed -w apps/api && npm run build
     startCommand: npm run start -w apps/api
     envVars:
       - key: NODE_ENV

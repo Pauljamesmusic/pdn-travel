@@ -112,6 +112,10 @@ pdn-travel/
 4. Serve `apps/web/dist` and proxy `/api` and `/uploads` to the API on the same origin.
 5. Keep `apps/api/uploads/` on persistent storage and back it up with the database.
 
+> **Render free plan note:** `render.yaml` currently deploys to Render's **free** web service plan, which has no persistent disk — its filesystem (and the SQLite file on it) is reset on every restart, including the automatic sleep/wake cycle after ~15 minutes idle, not just on deploys. The build no longer force-wipes the database on deploy (see `db:seed`'s admin-edits-are-kept behaviour above), but content will still reset itself when the free instance restarts on its own. To make admin content genuinely permanent, do **one** of:
+> - Attach a Render **persistent disk** to the service (needs a paid plan) and point `DATABASE_URL` and the uploads folder at it, or
+> - Switch to a managed Postgres database (step 3 above) for content, plus object storage (e.g. S3-compatible) for uploaded images instead of the local `uploads/` folder.
+
 ## Design system
 
 - **Colours, type and radii** come from the Figma file as CSS variables in `apps/web/src/styles/index.css`.
