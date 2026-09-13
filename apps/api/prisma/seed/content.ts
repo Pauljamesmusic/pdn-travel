@@ -226,6 +226,7 @@ export const pages: {
         items: [
           { name: 'Prabhu Ram Paudyal', role: 'Founder, Peace Destination Nepal Pvt. Ltd.', bio: 'A nature-loving traveller and dedicated travel expert who founded PDN to create transformative journeys built on hospitality and guest happiness.', photo: '' },
           { name: 'Tushar Pant', role: 'Travel Expert & Mountain Guide', bio: 'A young entrepreneur and seasoned guide on the Manaslu, Annapurna, Langtang and Everest Base Camp routes, currently studying at the Nepal Academy of Tourism and Hotel Management.', photo: '' },
+          { name: 'Paul James', role: 'Web Developer', bio: 'I coded your departure gate.\n\nEvery button, route, and booking flow on this platform was architected by me from a blank canvas.', photo: '' },
         ],
       },
       {
