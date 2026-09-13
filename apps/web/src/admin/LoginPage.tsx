@@ -103,7 +103,7 @@ export default function LoginPage({ onSignedIn }: { onSignedIn: (user: AdminUser
                 <span className="text-meta font-semibold text-fg">Email</span>
                 <span className="relative">
                   <Mail size={18} className="absolute start-4 top-1/2 -translate-y-1/2 text-fg-subtle" aria-hidden="true" />
-                  <input type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} />
+                  <input type="text" inputMode="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} />
                 </span>
               </label>
               <label className="flex flex-col gap-1.5">
