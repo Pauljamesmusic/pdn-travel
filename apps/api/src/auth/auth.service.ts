@@ -45,14 +45,18 @@ export class AuthService {
 
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) {
-      const attempts = user.failedLogins + 1;
-      await this.prisma.adminUser.update({
+      // Atomic increment — reading failedLogins and writing it back as a literal would lose
+      // updates when concurrent wrong-password requests race, letting the lockout be bypassed.
+      const updated = await this.prisma.adminUser.update({
         where: { id: user.id },
-        data:
-          attempts >= MAX_ATTEMPTS
-            ? { failedLogins: 0, lockedUntil: new Date(Date.now() + LOCK_MINUTES * 60_000) }
-            : { failedLogins: attempts },
+        data: { failedLogins: { increment: 1 } },
       });
+      if (updated.failedLogins >= MAX_ATTEMPTS) {
+        await this.prisma.adminUser.update({
+          where: { id: user.id },
+          data: { failedLogins: 0, lockedUntil: new Date(Date.now() + LOCK_MINUTES * 60_000) },
+        });
+      }
       await audit(this.prisma, user.id, 'login.failed', 'AdminUser', user.id, ip);
       throw new UnauthorizedException('Invalid email or password');
     }
@@ -118,6 +122,10 @@ export class AuthService {
   }
 
   async setupTotp(sessionUser: SessionUser) {
+    const existing = await this.prisma.adminUser.findUniqueOrThrow({ where: { id: sessionUser.id } });
+    if (existing.totpEnabled) {
+      throw new BadRequestException('Two-factor sign-in is already on. Turn it off first to set up a new device.');
+    }
     const secret = authenticator.generateSecret();
     await this.prisma.adminUser.update({
       where: { id: sessionUser.id },

@@ -78,6 +78,7 @@ export default function PageEditorPage() {
   const [saving, setSaving] = useState(false);
   const [open, setOpen] = useState<Set<string>>(new Set());
   const [adding, setAdding] = useState(false);
+  const [slugTouched, setSlugTouched] = useState(!!id);
   const bypass = useRef(false);
 
   useEffect(() => {
@@ -179,7 +180,7 @@ export default function PageEditorPage() {
         <div className="flex flex-col gap-6">
           <Card title="Page header">
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <TextInput label="Title" required maxLength={160} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value, slug: id ? form.slug : slugify(e.target.value) })} />
+              <TextInput label="Title" required maxLength={160} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value, slug: slugTouched ? form.slug : slugify(e.target.value) })} />
               <TextInput label="Eyebrow" maxLength={80} placeholder="Support" value={form.eyebrow} onChange={(e) => set('eyebrow', e.target.value)} />
               <TextArea label="Subtitle" rows={2} maxLength={400} className="sm:col-span-2" value={form.subtitle} onChange={(e) => set('subtitle', e.target.value)} />
               <div className="sm:col-span-2">
@@ -257,7 +258,16 @@ export default function PageEditorPage() {
               <Toggle label="Published" description="Visible on the website" checked={form.isPublished} onChange={(v) => set('isPublished', v)} />
               <Toggle label="Show in Support menu" description="Navbar dropdown and footer" checked={form.inSupportMenu} onChange={(v) => set('inSupportMenu', v)} />
               <TextInput label="Menu order" type="number" hint="Lower numbers appear first" value={form.sortOrder} onChange={(e) => set('sortOrder', Number(e.target.value))} />
-              <TextInput label="Web address" hint={`/support/${form.slug || 'page'}`} maxLength={80} value={form.slug} onChange={(e) => set('slug', slugify(e.target.value))} />
+              <TextInput
+                label="Web address"
+                hint={`/support/${form.slug || 'page'}`}
+                maxLength={80}
+                value={form.slug}
+                onChange={(e) => {
+                  setSlugTouched(true);
+                  set('slug', slugify(e.target.value));
+                }}
+              />
             </div>
           </Card>
           <Card title="SEO">

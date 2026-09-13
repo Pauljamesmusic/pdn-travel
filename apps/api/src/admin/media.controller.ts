@@ -101,8 +101,10 @@ export class MediaAdminController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: MediaUpdateDto) {
-    return this.prisma.media.update({ where: { id }, data: { alt: dto.alt } });
+  async update(@Param('id', ParseIntPipe) id: number, @Body() dto: MediaUpdateDto, @CurrentUser() user: SessionUser) {
+    const media = await this.prisma.media.update({ where: { id }, data: { alt: dto.alt } });
+    await audit(this.prisma, user.id, 'update', 'Media', id);
+    return media;
   }
 
   @Get(':id/usage')

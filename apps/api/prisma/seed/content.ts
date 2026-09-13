@@ -32,20 +32,6 @@ export const homeSettings = {
       titleTail: 'places',
       body: 'From scorching deserts to freezing mountains, steamy rainforests to vibrant cities — uncover the cultures, religions and traditions that make every place extraordinary.',
     },
-    {
-      eyebrow: 'Himalayan journeys',
-      titleLead: 'Walk where the',
-      titleAccent: 'sky',
-      titleTail: 'begins',
-      body: 'Guided treks to Everest and Annapurna with the local experts who call these mountains home.',
-    },
-    {
-      eyebrow: 'Atithi Devo Bhava',
-      titleLead: 'Travel is how you',
-      titleAccent: 'live',
-      titleTail: 'the journey',
-      body: 'Responsible, immersive journeys planned with care by a government-authorised agency registered in Nepal since 2014.',
-    },
   ],
   stats: [
     { value: '1.2M+', label: 'Hotels worldwide' },

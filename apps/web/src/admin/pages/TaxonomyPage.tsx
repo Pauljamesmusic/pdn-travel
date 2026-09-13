@@ -153,6 +153,7 @@ function ContinentsTab() {
   const { data, error, loading, reload, mutate } = useAdminApi<ContinentRow[]>('/admin/continents');
   const crud = useCrud('/admin/continents', reload);
   const [draft, setDraft] = useState<ContinentDraft | null>(null);
+  const [slugTouched, setSlugTouched] = useState(false);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -169,7 +170,13 @@ function ContinentsTab() {
   return (
     <>
       <div className="mb-4 flex justify-end">
-        <Button size="sm" onClick={() => setDraft({ name: '', slug: '', tagline: '', image: '' })}>
+        <Button
+          size="sm"
+          onClick={() => {
+            setDraft({ name: '', slug: '', tagline: '', image: '' });
+            setSlugTouched(false);
+          }}
+        >
           <Plus size={16} aria-hidden="true" /> Add continent
         </Button>
       </div>
@@ -182,8 +189,14 @@ function ContinentsTab() {
             subtitle={`${c._count.countries} countr${c._count.countries === 1 ? 'y' : 'ies'} · /destinations?continent=${c.slug}`}
             actions={
               <>
-                <EditButton label={c.name} onClick={() => setDraft({ id: c.id, name: c.name, slug: c.slug, tagline: c.tagline ?? '', image: c.image ?? '' })} />
-                <RowActions index={i} length={data.length} onMove={(to) => move(i, to)} onRemove={() => crud.remove(c.id, c.name, c._count.countries ? `It still has ${c._count.countries} countries — you will need to move them first.` : 'This cannot be undone.')} />
+                <EditButton
+                  label={c.name}
+                  onClick={() => {
+                    setDraft({ id: c.id, name: c.name, slug: c.slug, tagline: c.tagline ?? '', image: c.image ?? '' });
+                    setSlugTouched(true);
+                  }}
+                />
+                <RowActions index={i} length={data.length} onMove={(to) => move(i, to)} onRemove={() => crud.remove(c.id, c.name, c._count.countries ? `It still has ${c._count.countries} ${c._count.countries === 1 ? 'country' : 'countries'} — you will need to move them first.` : 'This cannot be undone.')} />
               </>
             }
           />
@@ -192,8 +205,16 @@ function ContinentsTab() {
       {draft && (
         <FormModal id="continent-form" title={draft.id ? `Edit ${draft.name}` : 'New continent'} onClose={() => setDraft(null)} saving={crud.saving}>
           <form id="continent-form" onSubmit={submit} className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <TextInput label="Name" required maxLength={80} value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value, slug: draft.id ? draft.slug : slugify(e.target.value) })} />
-            <TextInput label="Slug" maxLength={80} value={draft.slug} onChange={(e) => setDraft({ ...draft, slug: slugify(e.target.value) })} />
+            <TextInput label="Name" required maxLength={80} value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value, slug: slugTouched ? draft.slug : slugify(e.target.value) })} />
+            <TextInput
+              label="Slug"
+              maxLength={80}
+              value={draft.slug}
+              onChange={(e) => {
+                setSlugTouched(true);
+                setDraft({ ...draft, slug: slugify(e.target.value) });
+              }}
+            />
             <TextInput label="Tagline" maxLength={120} className="sm:col-span-2" value={draft.tagline} onChange={(e) => setDraft({ ...draft, tagline: e.target.value })} />
             <div className="sm:col-span-2">
               <ImageField label="Card image" value={draft.image} onChange={(image) => setDraft({ ...draft, image })} />
@@ -236,6 +257,7 @@ function CountriesTab() {
   const { data: continents } = useAdminApi<ContinentRow[]>('/admin/continents');
   const crud = useCrud('/admin/countries', reload);
   const [draft, setDraft] = useState<CountryDraft | null>(null);
+  const [slugTouched, setSlugTouched] = useState(false);
   const [continent, setContinent] = useState('');
   const [query, setQuery] = useState('');
 
@@ -279,7 +301,13 @@ function CountriesTab() {
             </option>
           ))}
         </select>
-        <Button size="sm" onClick={() => setDraft(emptyCountry(continent ? Number(continent) : ''))}>
+        <Button
+          size="sm"
+          onClick={() => {
+            setDraft(emptyCountry(continent ? Number(continent) : ''));
+            setSlugTouched(false);
+          }}
+        >
           <Plus size={16} aria-hidden="true" /> Add country
         </Button>
       </div>
@@ -304,11 +332,17 @@ function CountriesTab() {
             }
             actions={
               <>
-                <EditButton label={c.name} onClick={() => setDraft(toDraft(c))} />
+                <EditButton
+                  label={c.name}
+                  onClick={() => {
+                    setDraft(toDraft(c));
+                    setSlugTouched(true);
+                  }}
+                />
                 {canReorder ? (
-                  <RowActions index={i} length={rows.length} onMove={(to) => crud.reorder(moveItem(rows, i, to).map((r) => r.id))} onRemove={() => crud.remove(c.id, c.name, c._count.trips ? `${c._count.trips} trips use this country — reassign them first.` : 'This cannot be undone.')} />
+                  <RowActions index={i} length={rows.length} onMove={(to) => crud.reorder(moveItem(rows, i, to).map((r) => r.id))} onRemove={() => crud.remove(c.id, c.name, c._count.trips ? `${c._count.trips} ${c._count.trips === 1 ? 'trip uses' : 'trips use'} this country — reassign ${c._count.trips === 1 ? 'it' : 'them'} first.` : 'This cannot be undone.')} />
                 ) : (
-                  <button type="button" onClick={() => crud.remove(c.id, c.name, c._count.trips ? `${c._count.trips} trips use this country — reassign them first.` : 'This cannot be undone.')} aria-label={`Delete ${c.name}`} className="flex size-9 items-center justify-center rounded-sm text-fg-brand hover:bg-brand-subtle">
+                  <button type="button" onClick={() => crud.remove(c.id, c.name, c._count.trips ? `${c._count.trips} ${c._count.trips === 1 ? 'trip uses' : 'trips use'} this country — reassign ${c._count.trips === 1 ? 'it' : 'them'} first.` : 'This cannot be undone.')} aria-label={`Delete ${c.name}`} className="flex size-9 items-center justify-center rounded-sm text-fg-brand hover:bg-brand-subtle">
                     <Trash2 size={16} aria-hidden="true" />
                   </button>
                 )}
@@ -320,8 +354,17 @@ function CountriesTab() {
       {draft && (
         <FormModal id="country-form" title={draft.id ? `Edit ${draft.name}` : 'New country'} onClose={() => setDraft(null)} saving={crud.saving}>
           <form id="country-form" onSubmit={submit} className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <TextInput label="Name" required maxLength={80} value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value, slug: draft.id ? draft.slug : slugify(e.target.value) })} />
-            <TextInput label="Slug" maxLength={80} hint={`/destinations/${draft.slug || 'country'}`} value={draft.slug} onChange={(e) => setDraft({ ...draft, slug: slugify(e.target.value) })} />
+            <TextInput label="Name" required maxLength={80} value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value, slug: slugTouched ? draft.slug : slugify(e.target.value) })} />
+            <TextInput
+              label="Slug"
+              maxLength={80}
+              hint={`/destinations/${draft.slug || 'country'}`}
+              value={draft.slug}
+              onChange={(e) => {
+                setSlugTouched(true);
+                setDraft({ ...draft, slug: slugify(e.target.value) });
+              }}
+            />
             <SelectInput label="Continent" required value={draft.continentId} onChange={(e) => setDraft({ ...draft, continentId: e.target.value ? Number(e.target.value) : '' })}>
               <option value="">Choose…</option>
               {continents?.map((c) => (
@@ -357,6 +400,7 @@ function ActivitiesTab() {
   const { data, error, loading, reload, mutate } = useAdminApi<ActivityRow[]>('/admin/activities');
   const crud = useCrud('/admin/activities', reload);
   const [draft, setDraft] = useState<ActivityDraft | null>(null);
+  const [slugTouched, setSlugTouched] = useState(false);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -376,7 +420,13 @@ function ActivitiesTab() {
     <>
       <div className="mb-4 flex items-center justify-between gap-3">
         <p className="text-body-s text-fg-muted">Tags power the activity filters and search (e.g. cycling, trekking, sunrise, swimming, cultural).</p>
-        <Button size="sm" onClick={() => setDraft({ name: '', slug: '', icon: 'compass', description: '', image: '' })}>
+        <Button
+          size="sm"
+          onClick={() => {
+            setDraft({ name: '', slug: '', icon: 'compass', description: '', image: '' });
+            setSlugTouched(false);
+          }}
+        >
           <Plus size={16} aria-hidden="true" /> Add tag
         </Button>
       </div>
@@ -393,8 +443,29 @@ function ActivitiesTab() {
             subtitle={`${a._count.trips} trip${a._count.trips === 1 ? '' : 's'} · /activities/${a.slug}`}
             actions={
               <>
-                <EditButton label={a.name} onClick={() => setDraft({ id: a.id, name: a.name, slug: a.slug, icon: a.icon, description: a.description ?? '', image: a.image ?? '' })} />
-                <RowActions index={i} length={data.length} onMove={(to) => move(i, to)} onRemove={() => crud.remove(a.id, a.name, a._count.trips ? `The tag will be removed from ${a._count.trips} trips. The trips themselves are not deleted.` : 'This cannot be undone.')} />
+                <EditButton
+                  label={a.name}
+                  onClick={() => {
+                    setDraft({ id: a.id, name: a.name, slug: a.slug, icon: a.icon, description: a.description ?? '', image: a.image ?? '' });
+                    setSlugTouched(true);
+                  }}
+                />
+                <RowActions
+                  index={i}
+                  length={data.length}
+                  onMove={(to) => move(i, to)}
+                  onRemove={() =>
+                    crud.remove(
+                      a.id,
+                      a.name,
+                      a._count.trips
+                        ? a._count.trips === 1
+                          ? 'The tag will be removed from 1 trip. The trip itself is not deleted.'
+                          : `The tag will be removed from ${a._count.trips} trips. The trips themselves are not deleted.`
+                        : 'This cannot be undone.',
+                    )
+                  }
+                />
               </>
             }
           />
@@ -403,8 +474,16 @@ function ActivitiesTab() {
       {draft && (
         <FormModal id="activity-form" title={draft.id ? `Edit ${draft.name}` : 'New activity tag'} onClose={() => setDraft(null)} saving={crud.saving}>
           <form id="activity-form" onSubmit={submit} className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <TextInput label="Name" required maxLength={60} value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value, slug: draft.id ? draft.slug : slugify(e.target.value) })} />
-            <TextInput label="Slug" maxLength={80} value={draft.slug} onChange={(e) => setDraft({ ...draft, slug: slugify(e.target.value) })} />
+            <TextInput label="Name" required maxLength={60} value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value, slug: slugTouched ? draft.slug : slugify(e.target.value) })} />
+            <TextInput
+              label="Slug"
+              maxLength={80}
+              value={draft.slug}
+              onChange={(e) => {
+                setSlugTouched(true);
+                setDraft({ ...draft, slug: slugify(e.target.value) });
+              }}
+            />
             <IconPicker value={draft.icon} onChange={(icon) => setDraft({ ...draft, icon })} />
             <div />
             <TextArea label="Description" rows={3} maxLength={1000} className="sm:col-span-2" value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} />

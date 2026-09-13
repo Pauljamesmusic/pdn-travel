@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+import { startOfUtcDay } from '../common/utils';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Controller('admin/dashboard')
@@ -10,6 +11,7 @@ export class DashboardAdminController {
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const todayUtc = startOfUtcDay(now);
 
     const [
       liveTrips,
@@ -51,12 +53,12 @@ export class DashboardAdminController {
       }),
       this.prisma.trip.findMany({ where: { days: { none: {} } }, select: { id: true, title: true }, take: 10 }),
       this.prisma.trip.findMany({
-        where: { isPublished: true, departures: { none: { startDate: { gte: now } } } },
+        where: { isPublished: true, departures: { none: { startDate: { gte: todayUtc } } } },
         select: { id: true, title: true },
         take: 10,
       }),
       this.prisma.departure.findMany({
-        where: { seatsLeft: 0, startDate: { gte: now } },
+        where: { seatsLeft: 0, startDate: { gte: todayUtc } },
         select: { id: true, startDate: true, trip: { select: { id: true, title: true } } },
         take: 10,
       }),

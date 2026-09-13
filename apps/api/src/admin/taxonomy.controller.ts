@@ -106,10 +106,11 @@ export class ContinentsAdminController {
 
   @Post('reorder')
   @HttpCode(200)
-  async reorder(@Body() dto: ReorderDto) {
+  async reorder(@Body() dto: ReorderDto, @CurrentUser() user: SessionUser) {
     await this.prisma.$transaction(
       dto.ids.map((id, index) => this.prisma.continent.update({ where: { id }, data: { sortOrder: index } })),
     );
+    await audit(this.prisma, user.id, 'reorder', 'Continent', dto.ids.join(','));
     return { ok: true };
   }
 
@@ -142,7 +143,10 @@ export class CountriesAdminController {
 
   @Post()
   async create(@Body() dto: CountryDto, @CurrentUser() user: SessionUser) {
-    const row = await this.prisma.country.create({ data: { ...clean(dto), slug: slugify(dto.slug || dto.name) } });
+    const max = await this.prisma.country.aggregate({ _max: { sortOrder: true } });
+    const row = await this.prisma.country.create({
+      data: { ...clean(dto), slug: slugify(dto.slug || dto.name), sortOrder: dto.sortOrder ?? (max._max.sortOrder ?? 0) + 1 },
+    });
     await audit(this.prisma, user.id, 'create', 'Country', row.id);
     return row;
   }
@@ -159,10 +163,11 @@ export class CountriesAdminController {
 
   @Post('reorder')
   @HttpCode(200)
-  async reorder(@Body() dto: ReorderDto) {
+  async reorder(@Body() dto: ReorderDto, @CurrentUser() user: SessionUser) {
     await this.prisma.$transaction(
       dto.ids.map((id, index) => this.prisma.country.update({ where: { id }, data: { sortOrder: index } })),
     );
+    await audit(this.prisma, user.id, 'reorder', 'Country', dto.ids.join(','));
     return { ok: true };
   }
 
@@ -219,10 +224,11 @@ export class ActivitiesAdminController {
 
   @Post('reorder')
   @HttpCode(200)
-  async reorder(@Body() dto: ReorderDto) {
+  async reorder(@Body() dto: ReorderDto, @CurrentUser() user: SessionUser) {
     await this.prisma.$transaction(
       dto.ids.map((id, index) => this.prisma.activityTag.update({ where: { id }, data: { sortOrder: index } })),
     );
+    await audit(this.prisma, user.id, 'reorder', 'ActivityTag', dto.ids.join(','));
     return { ok: true };
   }
 

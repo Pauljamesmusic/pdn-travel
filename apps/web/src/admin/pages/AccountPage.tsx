@@ -52,6 +52,8 @@ export default function AccountPage() {
                 if (!(await confirm({ title: 'Sign out everywhere?', body: 'You will need to sign in again on every device.', confirmLabel: 'Sign out everywhere', tone: 'danger' }))) return;
                 try {
                   await adminApi('/admin/account/logout-all', { method: 'POST' });
+                } catch (err) {
+                  toast((err as Error).message || 'Could not reach the server — other devices may still be signed in.', 'error');
                 } finally {
                   setUser(null);
                   navigate('/admin/login', { replace: true });

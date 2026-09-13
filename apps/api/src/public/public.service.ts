@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { parseJson } from '../common/utils';
+import { parseJson, startOfUtcDay } from '../common/utils';
 import { PrismaService } from '../prisma/prisma.service';
 import type { EnquiryDto, TripQueryDto } from './public.dto';
 
@@ -291,7 +291,7 @@ export class PublicService {
         days: { orderBy: [{ sortOrder: 'asc' }, { dayNumber: 'asc' }] },
         amenities: { orderBy: { sortOrder: 'asc' } },
         sections: { where: { isVisible: true }, orderBy: { sortOrder: 'asc' } },
-        departures: { where: { startDate: { gte: new Date() } }, orderBy: { startDate: 'asc' }, take: 24 },
+        departures: { where: { startDate: { gte: startOfUtcDay() } }, orderBy: { startDate: 'asc' }, take: 24 },
       },
     });
     if (!trip) throw new NotFoundException('Trip not found');

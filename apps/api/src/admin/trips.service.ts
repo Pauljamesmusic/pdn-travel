@@ -145,20 +145,24 @@ export class TripsAdminService {
     };
   }
 
-  private children(tripId: number, dto: TripDto) {
+  /** Cross-field checks that must hold before any write happens. */
+  private validateDepartures(dto: TripDto) {
     for (const d of dto.departures) {
       if (d.seatsLeft > d.seatsTotal) {
         throw new BadRequestException('Seats left cannot be more than total seats');
       }
     }
+  }
+
+  private children(client: Prisma.TransactionClient | PrismaService, tripId: number, dto: TripDto) {
     return [
-      this.prisma.tripActivity.createMany({
+      client.tripActivity.createMany({
         data: [...new Set(dto.activityIds)].map((activityId) => ({ tripId, activityId })),
       }),
-      this.prisma.tripPhoto.createMany({
+      client.tripPhoto.createMany({
         data: dto.photos.map((p, i) => ({ tripId, url: p.url, alt: p.alt ?? '', sortOrder: i })),
       }),
-      this.prisma.tripDay.createMany({
+      client.tripDay.createMany({
         data: dto.days.map((d, i) => ({
           tripId,
           dayNumber: d.dayNumber,
@@ -171,7 +175,7 @@ export class TripsAdminService {
           sortOrder: i,
         })),
       }),
-      this.prisma.tripAmenity.createMany({
+      client.tripAmenity.createMany({
         data: dto.amenities.map((a, i) => ({
           tripId,
           label: a.label,
@@ -180,7 +184,7 @@ export class TripsAdminService {
           sortOrder: i,
         })),
       }),
-      this.prisma.tripSection.createMany({
+      client.tripSection.createMany({
         data: dto.sections.map((s, i) => ({
           tripId,
           type: s.type,
@@ -190,7 +194,7 @@ export class TripsAdminService {
           sortOrder: i,
         })),
       }),
-      this.prisma.departure.createMany({
+      client.departure.createMany({
         data: dto.departures.map((d) => ({
           tripId,
           startDate: new Date(d.startDate),
@@ -203,13 +207,21 @@ export class TripsAdminService {
   }
 
   async create(dto: TripDto) {
-    const trip = await this.prisma.trip.create({ data: this.basics(dto) });
-    await this.prisma.$transaction(this.children(trip.id, dto));
+    this.validateDepartures(dto);
+    // Interactive transaction: if anything in children() fails (bad FK, DB error), the
+    // trip row itself rolls back too, instead of leaving an orphaned Trip with no content
+    // permanently occupying its slug.
+    const trip = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.trip.create({ data: this.basics(dto) });
+      await Promise.all(this.children(tx, created.id, dto));
+      return created;
+    });
     return this.get(trip.id);
   }
 
   /** Full replace of a trip and all its nested content in one transaction. */
   async update(id: number, dto: TripDto) {
+    this.validateDepartures(dto);
     await this.prisma.trip.findUniqueOrThrow({ where: { id }, select: { id: true } });
     await this.prisma.$transaction([
       this.prisma.trip.update({ where: { id }, data: this.basics(dto) }),
@@ -219,7 +231,7 @@ export class TripsAdminService {
       this.prisma.tripAmenity.deleteMany({ where: { tripId: id } }),
       this.prisma.tripSection.deleteMany({ where: { tripId: id } }),
       this.prisma.departure.deleteMany({ where: { tripId: id } }),
-      ...this.children(id, dto),
+      ...this.children(this.prisma, id, dto),
     ]);
     return this.get(id);
   }

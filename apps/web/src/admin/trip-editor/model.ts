@@ -200,8 +200,10 @@ export function toDto(form: TripForm) {
   return {
     ...form,
     countryId: Number(form.countryId),
-    groupSizeMax: form.groupSizeMax || null,
-    maxAltitude: form.maxAltitude || null,
+    // Not `|| null` — 0 is a legitimate maxAltitude (sea-level trips) and falsy-coercion was
+    // silently turning it into null on every save.
+    groupSizeMax: form.groupSizeMax == null ? null : form.groupSizeMax,
+    maxAltitude: form.maxAltitude == null ? null : form.maxAltitude,
     coverImage: form.coverImage || null,
     photos: form.photos.map(strip),
     days: form.days.map(strip),
@@ -227,6 +229,15 @@ export function validate(form: TripForm): { tab: TabId; message: string }[] {
   if (form.amenities.some((a) => !a.label.trim())) errors.push({ tab: 'inclusions', message: 'Every included / excluded item needs a label.' });
   if (form.departures.some((d) => !d.startDate)) errors.push({ tab: 'pricing', message: 'Every departure needs a date.' });
   if (form.departures.some((d) => d.seatsLeft > d.seatsTotal)) errors.push({ tab: 'pricing', message: 'Seats left cannot be more than total seats.' });
-  if (form.durationDays < 1) errors.push({ tab: 'pricing', message: 'Duration must be at least 1 day.' });
+  if (form.durationDays < 1 || form.durationDays > 365) errors.push({ tab: 'pricing', message: 'Duration must be between 1 and 365 days.' });
+  if (form.priceFrom < 0 || form.priceFrom > 10_000_000) errors.push({ tab: 'pricing', message: 'Price from must be between 0 and 10,000,000.' });
+  if (form.groupSizeMax != null && (form.groupSizeMax < 1 || form.groupSizeMax > 500)) errors.push({ tab: 'pricing', message: 'Max group size must be between 1 and 500.' });
+  if (form.maxAltitude != null && (form.maxAltitude < 0 || form.maxAltitude > 9000)) errors.push({ tab: 'pricing', message: 'Max altitude must be between 0 and 9000m.' });
+  if (form.rating < 0 || form.rating > 5) errors.push({ tab: 'pricing', message: 'Rating must be between 0 and 5.' });
+  if (form.reviewCount < 0) errors.push({ tab: 'pricing', message: 'Reviews cannot be negative.' });
+  if (form.departures.some((d) => d.seatsTotal < 0 || d.seatsTotal > 1000 || d.seatsLeft < 0 || d.seatsLeft > 1000)) {
+    errors.push({ tab: 'pricing', message: 'Seats must be between 0 and 1000.' });
+  }
+  if (form.departures.some((d) => d.priceOverride != null && d.priceOverride < 0)) errors.push({ tab: 'pricing', message: 'Price override cannot be negative.' });
   return errors;
 }

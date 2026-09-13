@@ -34,6 +34,8 @@ export default function TripsListPage() {
   const [search, setSearch] = useState(params.get('q') ?? '');
   const debounced = useDebounced(search, 300);
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [busyIds, setBusyIds] = useState<Set<number>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   const status = params.get('status') ?? '';
   const continentId = params.get('continentId') ?? '';
@@ -66,54 +68,75 @@ export default function TripsListPage() {
   const patchRow = (id: number, patch: Partial<TripRow>) =>
     mutate((prev) => (prev ? { ...prev, items: prev.items.map((t) => (t.id === id ? { ...t, ...patch } : t)) } : prev!));
 
+  /** Runs fn while marking `id` busy; a second call for the same id while one is in flight is ignored. */
+  const withRowBusy = async (id: number, fn: () => Promise<void>) => {
+    if (busyIds.has(id)) return;
+    setBusyIds((s) => new Set(s).add(id));
+    try {
+      await fn();
+    } finally {
+      setBusyIds((s) => {
+        const next = new Set(s);
+        next.delete(id);
+        return next;
+      });
+    }
+  };
+
   const setStatus = async (trip: TripRow, patch: { isPublished?: boolean; isFeatured?: boolean }) => {
     patchRow(trip.id, patch);
     try {
       await adminApi(`/admin/trips/${trip.id}/status`, { method: 'PATCH', json: patch });
       toast(patch.isPublished !== undefined ? (patch.isPublished ? `“${trip.title}” is live` : `“${trip.title}” moved to drafts`) : patch.isFeatured ? 'Added to featured trips' : 'Removed from featured trips');
     } catch (err) {
-      patchRow(trip.id, { isPublished: trip.isPublished, isFeatured: trip.isFeatured });
-      toast((err as Error).message, 'error');
-    }
-  };
-
-  const remove = async (trip: TripRow) => {
-    const ok = await confirm({
-      title: 'Delete this trip?',
-      body: (
-        <>
-          <strong className="text-fg">{trip.title}</strong> and its itinerary, photos, sections and departure dates will be permanently deleted. Existing enquiries are kept.
-        </>
-      ),
-      confirmLabel: 'Delete trip',
-      tone: 'danger',
-    });
-    if (!ok) return;
-    try {
-      await adminApi(`/admin/trips/${trip.id}`, { method: 'DELETE' });
-      toast('Trip deleted');
+      // Reload rather than restoring the pre-click values captured in this closure — those
+      // could be stale if another toggle for the same trip completed while this one was in flight.
       reload();
-    } catch (err) {
       toast((err as Error).message, 'error');
     }
   };
 
-  const duplicate = async (trip: TripRow) => {
-    try {
-      const copy = await adminApi<{ id: number }>(`/admin/trips/${trip.id}/duplicate`, { method: 'POST' });
-      toast('Copy created as a draft');
-      navigate(`/admin/trips/${copy.id}`);
-    } catch (err) {
-      toast((err as Error).message, 'error');
-    }
-  };
+  const remove = (trip: TripRow) =>
+    withRowBusy(trip.id, async () => {
+      const ok = await confirm({
+        title: 'Delete this trip?',
+        body: (
+          <>
+            <strong className="text-fg">{trip.title}</strong> and its itinerary, photos, sections and departure dates will be permanently deleted. Existing enquiries are kept.
+          </>
+        ),
+        confirmLabel: 'Delete trip',
+        tone: 'danger',
+      });
+      if (!ok) return;
+      try {
+        await adminApi(`/admin/trips/${trip.id}`, { method: 'DELETE' });
+        toast('Trip deleted');
+        reload();
+      } catch (err) {
+        toast((err as Error).message, 'error');
+      }
+    });
+
+  const duplicate = (trip: TripRow) =>
+    withRowBusy(trip.id, async () => {
+      try {
+        const copy = await adminApi<{ id: number }>(`/admin/trips/${trip.id}/duplicate`, { method: 'POST' });
+        toast('Copy created as a draft');
+        navigate(`/admin/trips/${copy.id}`);
+      } catch (err) {
+        toast((err as Error).message, 'error');
+      }
+    });
 
   const bulk = async (action: 'publish' | 'unpublish' | 'feature' | 'unfeature' | 'delete') => {
+    if (bulkBusy) return;
     const ids = [...selected];
     if (action === 'delete') {
       const ok = await confirm({ title: `Delete ${ids.length} trips?`, body: 'This cannot be undone.', confirmLabel: 'Delete trips', tone: 'danger' });
       if (!ok) return;
     }
+    setBulkBusy(true);
     try {
       const res = await adminApi<{ affected: number }>('/admin/trips/bulk', { method: 'POST', json: { ids, action } });
       toast(`${res.affected} trip${res.affected === 1 ? '' : 's'} updated`);
@@ -121,6 +144,8 @@ export default function TripsListPage() {
       reload();
     } catch (err) {
       toast((err as Error).message, 'error');
+    } finally {
+      setBulkBusy(false);
     }
   };
 
@@ -200,11 +225,11 @@ export default function TripsListPage() {
         <div className="sticky top-20 z-30 mb-4 flex flex-wrap items-center gap-2 rounded-md bg-inverse px-4 py-3 text-fg-inverse shadow-lg">
           <span className="me-auto text-label">{selected.size} selected</span>
           {(['publish', 'unpublish', 'feature', 'unfeature'] as const).map((a) => (
-            <button key={a} type="button" onClick={() => bulk(a)} className="h-9 rounded-full border border-white/25 px-3 text-meta font-semibold capitalize hover:bg-white/10">
+            <button key={a} type="button" disabled={bulkBusy} onClick={() => bulk(a)} className="h-9 rounded-full border border-white/25 px-3 text-meta font-semibold capitalize hover:bg-white/10 disabled:opacity-50">
               {a}
             </button>
           ))}
-          <button type="button" onClick={() => bulk('delete')} className="h-9 rounded-full bg-red-600 px-3 text-meta font-semibold text-ink-0 hover:bg-red-700">
+          <button type="button" disabled={bulkBusy} onClick={() => bulk('delete')} className="h-9 rounded-full bg-red-600 px-3 text-meta font-semibold text-ink-0 hover:bg-red-700 disabled:opacity-50">
             Delete
           </button>
         </div>
@@ -296,13 +321,13 @@ export default function TripsListPage() {
                         <Link to={`/admin/trips/${trip.id}`} aria-label="Edit" title="Edit" className="flex size-9 items-center justify-center rounded-sm text-fg-muted hover:bg-muted">
                           <Pencil size={16} aria-hidden="true" />
                         </Link>
-                        <button type="button" onClick={() => duplicate(trip)} aria-label="Duplicate" title="Duplicate" className="flex size-9 items-center justify-center rounded-sm text-fg-muted hover:bg-muted">
+                        <button type="button" disabled={busyIds.has(trip.id)} onClick={() => duplicate(trip)} aria-label="Duplicate" title="Duplicate" className="flex size-9 items-center justify-center rounded-sm text-fg-muted hover:bg-muted disabled:opacity-50">
                           <Copy size={16} aria-hidden="true" />
                         </button>
                         <a href={`/tours/${trip.slug}`} target="_blank" rel="noopener noreferrer" aria-label="View on website" title="View on website" className="flex size-9 items-center justify-center rounded-sm text-fg-muted hover:bg-muted">
                           <ExternalLink size={16} aria-hidden="true" />
                         </a>
-                        <button type="button" onClick={() => remove(trip)} aria-label="Delete" title="Delete" className="flex size-9 items-center justify-center rounded-sm text-fg-brand hover:bg-brand-subtle">
+                        <button type="button" disabled={busyIds.has(trip.id)} onClick={() => remove(trip)} aria-label="Delete" title="Delete" className="flex size-9 items-center justify-center rounded-sm text-fg-brand hover:bg-brand-subtle disabled:opacity-50">
                           <Trash2 size={16} aria-hidden="true" />
                         </button>
                       </div>

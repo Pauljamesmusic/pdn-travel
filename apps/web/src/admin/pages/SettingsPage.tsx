@@ -1,12 +1,12 @@
 import { Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useBlocker, useSearchParams } from 'react-router-dom';
 import { Button, ErrorState, Skeleton } from '../../components/ui';
 import { invalidate } from '../../lib/api';
 import { cx } from '../../lib/format';
 import { adminApi, useAdminApi } from '../api';
 import { type BlockDef, FieldControl, type FieldDef, ItemsEditor } from '../page-editor/blocks';
-import { AdminPageHeader, Card, useFeedback } from '../ui';
+import { AdminPageHeader, Card, Modal, useFeedback } from '../ui';
 
 type Obj = Record<string, unknown>;
 type Key = 'site' | 'home';
@@ -113,6 +113,20 @@ export default function SettingsPage() {
     if (data && !drafts) setDrafts({ site: data.site ?? {}, home: data.home ?? {} });
   }, [data, drafts]);
 
+  // Both tabs' drafts live in state at once — switching tabs doesn't lose anything, but a
+  // navigation away from this page can, so the leave-guard covers both, not just the active one.
+  // Computed defensively (drafts may still be null) since hooks below must run unconditionally.
+  const anyDirty = !!drafts && (['site', 'home'] as const).some((k) => JSON.stringify(drafts[k]) !== JSON.stringify(data?.[k] ?? {}));
+
+  const blocker = useBlocker(({ currentLocation, nextLocation }) => anyDirty && currentLocation.pathname !== nextLocation.pathname);
+
+  useEffect(() => {
+    if (!anyDirty) return;
+    const onUnload = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener('beforeunload', onUnload);
+    return () => window.removeEventListener('beforeunload', onUnload);
+  }, [anyDirty]);
+
   if (error && !data) return <ErrorState message={error.message} onRetry={reload} />;
   if (!drafts) return <Skeleton className="h-96" />;
 
@@ -186,6 +200,25 @@ export default function SettingsPage() {
             </Button>
           </div>
         </div>
+      )}
+
+      {blocker.state === 'blocked' && (
+        <Modal
+          title="Leave without saving?"
+          onClose={() => blocker.reset()}
+          footer={
+            <>
+              <Button size="sm" variant="secondary" onClick={() => blocker.reset()}>
+                Keep editing
+              </Button>
+              <Button size="sm" variant="danger" onClick={() => blocker.proceed()}>
+                Discard changes
+              </Button>
+            </>
+          }
+        >
+          <p className="text-body-s text-fg-muted">Your changes to these settings have not been saved yet.</p>
+        </Modal>
       )}
     </>
   );

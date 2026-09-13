@@ -13,6 +13,26 @@ export function isSafeUrl(value: unknown): value is string {
   return typeof value === 'string' && value.length <= 1000 && SAFE_URL.test(value);
 }
 
+const IMAGE_URL_KEYS = new Set(['image', 'photo', 'avatar', 'logo', 'url']);
+
+/**
+ * Recursively walks admin-authored JSON (CMS page blocks, site/home settings) and blanks any
+ * string found under an image-shaped key (image, photo, avatar, logo, url — matching the block
+ * editor's `kind: 'image'` fields and gallery `{ url, alt }` items) that isn't a safe URL. Mirrors
+ * trips.service.ts's `sanitizeSection`, generalized for content whose shape isn't a fixed DTO.
+ */
+export function sanitizeImageUrlsDeep<T>(value: T): T {
+  if (Array.isArray(value)) return value.map((v) => sanitizeImageUrlsDeep(v)) as T;
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [key, v] of Object.entries(value as Record<string, unknown>)) {
+      out[key] = typeof v === 'string' && IMAGE_URL_KEYS.has(key.toLowerCase()) ? (isSafeUrl(v) ? v : '') : sanitizeImageUrlsDeep(v);
+    }
+    return out as T;
+  }
+  return value;
+}
+
 /** Turns common database errors into friendly API responses instead of 500s. */
 @Catch(Prisma.PrismaClientKnownRequestError)
 export class PrismaExceptionFilter implements ExceptionFilter {

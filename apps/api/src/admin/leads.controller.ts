@@ -38,8 +38,10 @@ export class EnquiriesAdminController {
       const q = query.q.trim();
       and.push({ OR: [{ name: { contains: q } }, { email: { contains: q } }, { message: { contains: q } }] });
     }
-    if (query.from) and.push({ createdAt: { gte: new Date(query.from) } });
-    if (query.to) and.push({ createdAt: { lte: new Date(`${query.to}T23:59:59`) } });
+    // Parse both bounds as UTC — a bare date is already UTC, but a date-time string with no
+    // offset parses as local server time, which would shift the "to" cutoff relative to "from".
+    if (query.from) and.push({ createdAt: { gte: new Date(`${query.from}T00:00:00Z`) } });
+    if (query.to) and.push({ createdAt: { lte: new Date(`${query.to}T23:59:59Z`) } });
     return and.length ? { AND: and } : {};
   }
 

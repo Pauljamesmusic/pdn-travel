@@ -27,7 +27,7 @@ import {
 } from 'class-validator';
 import { CurrentUser, type SessionUser } from '../common/admin-auth.guard';
 import { audit, parseJson, slugify } from '../common/utils';
-import { IsSafeUrl } from '../common/validation';
+import { IsSafeUrl, sanitizeImageUrlsDeep } from '../common/validation';
 import { PrismaService } from '../prisma/prisma.service';
 
 const MAX_PAGE_BYTES = 250_000;
@@ -84,7 +84,7 @@ export class PagesAdminController {
   }
 
   private data(dto: PageDto) {
-    const sections = JSON.stringify(dto.sections);
+    const sections = JSON.stringify(sanitizeImageUrlsDeep(dto.sections));
     if (sections.length > MAX_PAGE_BYTES) throw new BadRequestException('This page has too much content');
     return {
       title: dto.title.trim(),
@@ -104,7 +104,7 @@ export class PagesAdminController {
   async create(@Body() dto: PageDto, @CurrentUser() user: SessionUser) {
     const page = await this.prisma.page.create({ data: this.data(dto) });
     await audit(this.prisma, user.id, 'create', 'Page', page.id);
-    return page;
+    return { ...page, sections: parseJson(page.sections, []) };
   }
 
   @Put(':id')
@@ -166,10 +166,11 @@ export class SettingsAdminController {
   @Put(':key')
   async save(@Param('key') key: string, @Body() dto: SettingDto, @CurrentUser() user: SessionUser) {
     if (!(SETTING_KEYS as readonly string[]).includes(key)) throw new NotFoundException('Unknown setting');
-    const value = JSON.stringify(dto.value);
+    const sanitized = sanitizeImageUrlsDeep(dto.value);
+    const value = JSON.stringify(sanitized);
     if (value.length > 150_000) throw new BadRequestException('Settings are too large');
     await this.prisma.setting.upsert({ where: { key }, update: { value }, create: { key, value } });
     await audit(this.prisma, user.id, 'update', 'Setting', key);
-    return { ok: true, value: dto.value };
+    return { ok: true, value: sanitized };
   }
 }

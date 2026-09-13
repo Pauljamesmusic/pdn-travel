@@ -27,6 +27,15 @@ export function toInt(value: unknown, fallback: number): number {
   return Number.isFinite(n) ? Math.trunc(n) : fallback;
 }
 
+/**
+ * Start of the current UTC day. Departure dates are stored at UTC midnight (see the trip
+ * editor's `${date}T00:00:00.000Z` convention), so comparing against this instead of `new
+ * Date()` keeps today's departures from looking expired for most of the day.
+ */
+export function startOfUtcDay(from: Date = new Date()): Date {
+  return new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate()));
+}
+
 export async function audit(
   prisma: PrismaService,
   userId: number | undefined,
