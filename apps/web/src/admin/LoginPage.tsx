@@ -68,14 +68,16 @@ export default function LoginPage({ onSignedIn }: { onSignedIn: (user: AdminUser
       <div data-theme="dark" className="relative hidden overflow-hidden bg-canvas lg:block">
         <img src="/media/hero-poster.jpg" alt="" className="absolute inset-0 size-full object-cover opacity-80" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/30 to-ink-950/60" />
-        <div className="relative flex h-full flex-col justify-between p-12">
+        <div className="relative flex h-full flex-col p-12">
           <img src="/brand/pdn-logo-light.png" alt="PDN Travel" className="h-12 w-fit" />
-          <div className="mx-auto flex max-w-md flex-col items-center gap-3 text-center">
-            <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-red-400">Admin panel</p>
-            <h1 className="text-display-l text-fg">
-              Manage every <em className="text-red-500">journey</em>
-            </h1>
-            <p className="text-body-m text-fg-muted">Trips, itineraries, destinations, pages and photos — all in one secure place.</p>
+          <div className="flex flex-1 items-center justify-center">
+            <div className="mx-auto flex max-w-md flex-col items-center gap-3 text-center">
+              <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-red-400">Admin panel</p>
+              <h1 className="text-display-l text-fg">
+                Manage every <em className="text-red-500">journey</em>
+              </h1>
+              <p className="text-body-m text-fg-muted">Trips, itineraries, destinations, pages and photos — all in one secure place.</p>
+            </div>
           </div>
         </div>
       </div>
