@@ -1,0 +1,20 @@
+{
+  "name": "pdn-travel",
+  "private": true,
+  "description": "PDN Travel — travel agency website (React + Vite) and secure admin panel (NestJS + Prisma)",
+  "workspaces": [
+    "apps/api",
+    "apps/web"
+  ],
+  "scripts": {
+    "setup": "npm install && npm run db:setup",
+    "db:setup": "npm run db:push -w apps/api && npm run db:seed -w apps/api",
+    "db:reset": "npm run db:reset -w apps/api",
+    "dev": "concurrently -k -n api,web -c red,blue \"npm run dev -w apps/api\" \"npm run dev -w apps/web\"",
+    "build": "npm run build -w apps/api && npm run build -w apps/web",
+    "typecheck": "npm run typecheck -w apps/api && npm run typecheck -w apps/web"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}

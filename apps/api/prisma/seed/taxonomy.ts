@@ -1,0 +1,127 @@
+/** Unsplash-hosted photography. Replace any image from the admin Media library. */
+export const u = (id: string, w = 1600) =>
+  `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=80`;
+
+export const continents = [
+  { name: 'Africa', slug: 'africa', tagline: 'Safaris & savannas', image: u('1617415420840-48518720fe26', 900) },
+  { name: 'Asia', slug: 'asia', tagline: 'Temples & Himalayas', image: u('1618851142562-ff30d09313a9', 900) },
+  { name: 'Europe', slug: 'europe', tagline: 'Old towns & Alps', image: u('1527668752968-14dc70a27c95', 900) },
+  { name: 'North America', slug: 'north-america', tagline: 'Canyons & skylines', image: u('1623300973992-54b05851941d', 900) },
+  { name: 'South America', slug: 'south-america', tagline: 'Andes & Amazon', image: u('1664387518989-bb1d8574f078', 900) },
+  { name: 'Australia', slug: 'australia', tagline: 'Outback & reefs', image: u('1549180030-48bf079fb38a', 900) },
+];
+
+export const countries = [
+  {
+    name: 'Nepal', slug: 'nepal', continent: 'asia', region: 'Asia', isFeatured: true,
+    highlight: 'Everest trek · 14 days',
+    image: u('1755621089875-946937e8b609', 900), heroImage: u('1572109801525-0bb0272e8579', 2000),
+    summary: 'Home of eight of the world’s fourteen highest peaks, living temples, jungle national parks and some of the warmest hospitality anywhere. Nepal is where PDN began — and where our guides grew up.',
+    currency: 'Nepalese rupee (NPR)', language: 'Nepali — English widely spoken in tourist areas',
+    bestSeason: 'March–May and September–November',
+    visaNote: 'Most nationalities can get a tourist visa on arrival at Tribhuvan International Airport or apply online beforehand.',
+  },
+  {
+    name: 'UAE', slug: 'uae', continent: 'asia', region: 'Middle East', isFeatured: true,
+    highlight: 'Desert safaris · city stays',
+    image: u('1612899326681-66508905b4ce', 900), heroImage: u('1549944850-84e00be4203b', 2000),
+    summary: 'Golden dunes an hour from glittering skylines. Pair a night under desert stars with rooftop views, souks and beach days on the Gulf.',
+    currency: 'UAE dirham (AED)', language: 'Arabic — English widely spoken', bestSeason: 'October–April',
+    visaNote: 'Many passports receive a free visa on arrival; others can apply through an airline or hotel partner.',
+  },
+  {
+    name: 'India', slug: 'india', continent: 'asia', region: 'Asia', isFeatured: true,
+    highlight: 'Taj Mahal · Golden Triangle',
+    image: u('1564507592333-c60657eea523', 900), heroImage: u('1548013146-72479768bada', 2000),
+    summary: 'Palaces, spice markets and one of the most beautiful buildings ever made. India rewards curiosity at every turn.',
+    currency: 'Indian rupee (INR)', language: 'Hindi, English and many regional languages', bestSeason: 'October–March',
+    visaNote: 'Apply for an e-Visa online at least four days before arrival.',
+  },
+  {
+    name: 'Bhutan', slug: 'bhutan', continent: 'asia', region: 'Asia', isFeatured: false,
+    highlight: 'Tiger’s Nest · dzongs',
+    image: u('1700040005384-1fc87f522053', 900), heroImage: u('1584003734930-b12779f66351', 2000),
+    summary: 'A Himalayan kingdom that measures success in happiness — cliffside monasteries, prayer-flag passes and quiet valleys.',
+    currency: 'Bhutanese ngultrum (BTN)', language: 'Dzongkha — English widely spoken', bestSeason: 'March–May and September–November',
+    visaNote: 'Visas are arranged in advance through a licensed operator together with the Sustainable Development Fee.',
+  },
+  {
+    name: 'Maldives', slug: 'maldives', continent: 'asia', region: 'Asia', isFeatured: false,
+    highlight: 'Reefs · island escapes',
+    image: u('1674718275085-3c3f30dabcd1', 900), heroImage: u('1706753459618-31e52d7ca22d', 2000),
+    summary: 'Twelve hundred coral islands scattered across turquoise lagoons — made for snorkelling, diving and doing absolutely nothing.',
+    currency: 'Maldivian rufiyaa (MVR) — USD widely accepted', language: 'Dhivehi — English widely spoken', bestSeason: 'November–April',
+    visaNote: 'A free 30-day tourist visa is issued on arrival.',
+  },
+  {
+    name: 'Indonesia', slug: 'indonesia', continent: 'asia', region: 'Asia', isFeatured: false,
+    highlight: 'Bali temples · rice terraces',
+    image: u('1555400038-63f5ba517a47', 900), heroImage: u('1513415756790-2ac1db1297d0', 2000),
+    summary: 'Emerald rice terraces, sea temples and volcano sunrises — Bali is the gentle heart of a vast island nation.',
+    currency: 'Indonesian rupiah (IDR)', language: 'Bahasa Indonesia — English in tourist areas', bestSeason: 'April–October',
+    visaNote: 'Visa on arrival or e-VoA for most nationalities, plus the Bali tourist levy.',
+  },
+  {
+    name: 'Switzerland', slug: 'switzerland', continent: 'europe', region: 'Europe', isFeatured: true,
+    highlight: 'Alpine tours · lake cruises',
+    image: u('1586752488885-6ce47fdfd874', 900), heroImage: u('1521292270410-a8c4d716d518', 2000),
+    summary: 'Postcard villages, glacier trains and mirror-still lakes. Switzerland makes mountain travel effortless.',
+    currency: 'Swiss franc (CHF)', language: 'German, French, Italian — English widely spoken', bestSeason: 'June–September; December–March for snow',
+    visaNote: 'Schengen rules apply.',
+  },
+  {
+    name: 'France', slug: 'france', continent: 'europe', region: 'Europe', isFeatured: true,
+    highlight: 'Paris 6-day tour',
+    image: u('1502602898657-3e91760cbb34', 900), heroImage: u('1431274172761-fca41d930114', 2000),
+    summary: 'Boulevards, bistros and the world’s great museums. Paris is best on foot and slowly.',
+    currency: 'Euro (EUR)', language: 'French', bestSeason: 'April–June and September–October',
+    visaNote: 'Schengen rules apply.',
+  },
+  {
+    name: 'United States', slug: 'usa', continent: 'north-america', region: 'Americas', isFeatured: true,
+    highlight: 'Canyons · New York',
+    image: u('1485871981521-5b1fd3805eee', 900), heroImage: u('1531694611353-d4758f86fa6d', 2000),
+    summary: 'From Manhattan’s skyline to the Grand Canyon’s rim — a country of big cities and bigger landscapes.',
+    currency: 'US dollar (USD)', language: 'English', bestSeason: 'April–June and September–October',
+    visaNote: 'ESTA or a visitor visa is required depending on your passport.',
+  },
+  {
+    name: 'Peru', slug: 'peru', continent: 'south-america', region: 'Americas', isFeatured: false,
+    highlight: 'Machu Picchu · Sacred Valley',
+    image: u('1567597243073-2d274aabecec', 900), heroImage: u('1509216242873-7786f446f465', 2000),
+    summary: 'Inca citadels in the clouds, Andean markets and a food scene the world is only just discovering.',
+    currency: 'Peruvian sol (PEN)', language: 'Spanish, Quechua', bestSeason: 'May–September',
+    visaNote: 'Most visitors do not need a visa for stays up to 90 days.',
+  },
+  {
+    name: 'Tanzania', slug: 'tanzania', continent: 'africa', region: 'Africa', isFeatured: false,
+    highlight: 'Serengeti balloon safaris',
+    image: u('1717863827284-1360456b99db', 900), heroImage: u('1617415414949-a4c30d8ecb0b', 2000),
+    summary: 'The Great Migration, Ngorongoro Crater and dawn balloon flights over endless plains.',
+    currency: 'Tanzanian shilling (TZS) — USD widely accepted', language: 'Swahili, English', bestSeason: 'June–October',
+    visaNote: 'Apply for an e-Visa before travel.',
+  },
+  {
+    name: 'Australia', slug: 'australia', continent: 'australia', region: 'Oceania', isFeatured: false,
+    highlight: 'Sydney Harbour · reefs',
+    image: u('1590716209211-ea74d5f63573', 900), heroImage: u('1494948141550-221698c089c2', 2000),
+    summary: 'Harbour cities, red-earth outback and the largest coral reef system on the planet.',
+    currency: 'Australian dollar (AUD)', language: 'English', bestSeason: 'September–November and March–May',
+    visaNote: 'An ETA or eVisitor visa is required before travel.',
+  },
+];
+
+export const activities = [
+  { name: 'Trekking', slug: 'trekking', icon: 'mountain', image: u('1701255136052-b33f78a886a4', 900), description: 'Multi-day walks between teahouses, lodges and camps — from gentle valley hikes to high-altitude passes.' },
+  { name: 'Cycling', slug: 'cycling', icon: 'bike', image: u('1511994298241-608e28f14fde', 900), description: 'Mountain-bike trails and quiet country roads with support vehicles and local ride leaders.' },
+  { name: 'Sunrise', slug: 'sunrise', icon: 'sunrise', image: u('1549926506-afba2eb9fb6f', 900), description: 'Early starts that are always worth it — Himalayan viewpoints, desert dunes and temple silhouettes at first light.' },
+  { name: 'Swimming', slug: 'swimming', icon: 'waves', image: u('1659909984598-400aebbaff20', 900), description: 'Lake dips, lagoon snorkelling and wild-swimming spots chosen for safety and beauty.' },
+  { name: 'Cultural', slug: 'cultural', icon: 'landmark', image: u('1699202700754-1e5cbf0f8660', 900), description: 'Heritage sites, festivals, food and time with the people who keep traditions alive.' },
+  { name: 'Wildlife safari', slug: 'wildlife-safari', icon: 'binoculars', image: u('1751931817996-368c9ee352ee', 900), description: 'Jeep, canoe and walking safaris with naturalists who know every track and call.' },
+  { name: 'Rafting', slug: 'rafting', icon: 'sailboat', image: u('1641584495089-5914d85d9bcc', 900), description: 'White-water days on glacier-fed rivers with certified guides and safety kayakers.' },
+  { name: 'Paragliding', slug: 'paragliding', icon: 'wind', image: u('1610997686651-98492fd08108', 900), description: 'Tandem flights with licensed pilots over lakes, valleys and mountain ridges.' },
+  { name: 'Pilgrimage', slug: 'pilgrimage', icon: 'flower-2', image: u('1521681108133-d4f9d827a0c0', 900), description: 'Journeys to sacred sites — stupas, temples and monasteries — travelled with respect.' },
+  { name: 'City breaks', slug: 'city-breaks', icon: 'building-2', image: u('1499092346589-b9b6be3e94b2', 900), description: 'Short, well-paced stays in the world’s great cities with the best neighbourhoods mapped out.' },
+  { name: 'Diving', slug: 'diving', icon: 'fish', image: u('1674718246692-19a7c2c39462', 900), description: 'Reef and wall dives for certified divers, plus try-dive sessions for first-timers.' },
+  { name: 'Mountaineering', slug: 'mountaineering', icon: 'mountain-snow', image: u('1697012511676-674067ec0aa9', 900), description: 'Trekking peaks and alpine objectives with experienced climbing Sherpas.' },
+];

@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.vite/
+*.log
+.DS_Store
+
+# secrets
+.env
+.env.local
+.env.*.local
+
+# local database + user uploads
+apps/api/prisma/*.db
+apps/api/prisma/*.db-journal
+apps/api/uploads/*
+!apps/api/uploads/.gitkeep

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <link rel="icon" type="image/png" href="/brand/pdn-mark.png" />
+    <meta name="theme-color" content="#0b0b0b" />
+    <title>PDN Travel — Explore your dream places</title>
+    <meta
+      name="description"
+      content="PDN Travel (Peace Destination Nepal) — government-registered travel agency for Himalayan treks, cultural tours and journeys to 195 countries."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Sora:wght@300;400;600;700&family=Noto+Sans+Devanagari:wght@300;400;600&family=Noto+Serif+Devanagari:wght@400;600&family=Noto+Sans+Malayalam:wght@300;400;600&family=Noto+Serif+Malayalam:wght@400;600&family=Noto+Sans+Arabic:wght@300;400;600&family=Noto+Naskh+Arabic:wght@400;600&display=swap"
+    />
+    <script>
+      // Apply the saved theme and language before first paint (no flash).
+      (function () {
+        try {
+          var root = document.documentElement;
+          var mode = localStorage.getItem('pdn.theme') || 'system';
+          var dark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          root.setAttribute('data-theme', dark ? 'dark' : 'light');
+          var lang = localStorage.getItem('pdn.lang') || 'en';
+          root.lang = lang;
+          root.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

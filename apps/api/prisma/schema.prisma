@@ -1,0 +1,286 @@
+// PDN Travel data model.
+// Everything the public site shows is a view of these tables and is editable from /admin.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Taxonomy ────────────────────────────────────────────────────────────────
+
+model Continent {
+  id        Int       @id @default(autoincrement())
+  name      String
+  slug      String    @unique
+  tagline   String?
+  image     String?
+  sortOrder Int       @default(0)
+  countries Country[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Country {
+  id          Int       @id @default(autoincrement())
+  name        String
+  slug        String    @unique
+  continentId Int
+  continent   Continent @relation(fields: [continentId], references: [id], onDelete: Restrict)
+  region      String? // grouping chip on the home page, e.g. "Middle East"
+  summary     String?
+  highlight   String? // short meta line on the country card, e.g. "Everest trek · 21 days"
+  image       String?
+  heroImage   String?
+  currency    String?
+  language    String?
+  bestSeason  String?
+  visaNote    String?
+  isFeatured  Boolean   @default(false)
+  sortOrder   Int       @default(0)
+  trips       Trip[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([continentId])
+}
+
+model ActivityTag {
+  id          Int            @id @default(autoincrement())
+  name        String
+  slug        String         @unique
+  icon        String         @default("compass") // lucide icon name
+  description String?
+  image       String?
+  sortOrder   Int            @default(0)
+  trips       TripActivity[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+// ─── Trips / itineraries ─────────────────────────────────────────────────────
+
+model Trip {
+  id              Int            @id @default(autoincrement())
+  title           String
+  slug            String         @unique
+  countryId       Int
+  country         Country        @relation(fields: [countryId], references: [id], onDelete: Restrict)
+  location        String?
+  summary         String
+  priceFrom       Int
+  currency        String         @default("USD")
+  durationDays    Int
+  difficulty      String         @default("Moderate")
+  groupSizeMax    Int?
+  maxAltitude     Int?
+  bestSeason      String?
+  rating          Float          @default(0)
+  reviewCount     Int            @default(0)
+  badge           String?
+  coverImage      String?
+  isPublished     Boolean        @default(false)
+  isFeatured      Boolean        @default(false)
+  sortOrder       Int            @default(0)
+  metaTitle       String?
+  metaDescription String?
+  activities      TripActivity[]
+  photos          TripPhoto[]
+  days            TripDay[]
+  amenities       TripAmenity[]
+  sections        TripSection[]
+  departures      Departure[]
+  enquiries       Enquiry[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([countryId])
+  @@index([isPublished, isFeatured])
+}
+
+model TripActivity {
+  tripId     Int
+  activityId Int
+  trip       Trip        @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  activity   ActivityTag @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@id([tripId, activityId])
+  @@index([activityId])
+}
+
+model TripPhoto {
+  id        Int    @id @default(autoincrement())
+  tripId    Int
+  trip      Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  url       String
+  alt       String @default("")
+  sortOrder Int    @default(0)
+
+  @@index([tripId])
+}
+
+model TripDay {
+  id        Int     @id @default(autoincrement())
+  tripId    Int
+  trip      Trip    @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  dayNumber Int
+  title     String
+  body      String  @default("")
+  walkHours String?
+  altitude  String?
+  lodging   String?
+  meals     String?
+  sortOrder Int     @default(0)
+
+  @@index([tripId])
+}
+
+model TripAmenity {
+  id        Int     @id @default(autoincrement())
+  tripId    Int
+  trip      Trip    @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  label     String
+  icon      String  @default("check")
+  included  Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  @@index([tripId])
+}
+
+// Every content block on a trip page is a section the admin can add, remove,
+// hide and reorder. `content` is JSON whose shape depends on `type`.
+model TripSection {
+  id        Int     @id @default(autoincrement())
+  tripId    Int
+  trip      Trip    @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  type      String // overview | highlights | itinerary | inclusions | departures | faq | list | richText | gallery
+  title     String
+  content   String  @default("{}")
+  isVisible Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  @@index([tripId])
+}
+
+model Departure {
+  id            Int      @id @default(autoincrement())
+  tripId        Int
+  trip          Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  startDate     DateTime
+  seatsTotal    Int      @default(12)
+  seatsLeft     Int      @default(12)
+  priceOverride Int?
+
+  @@index([tripId, startDate])
+}
+
+// ─── CMS ─────────────────────────────────────────────────────────────────────
+
+model Page {
+  id              Int      @id @default(autoincrement())
+  slug            String   @unique
+  title           String
+  eyebrow         String?
+  subtitle        String?
+  heroImage       String?
+  sections        String   @default("[]") // JSON array of content blocks
+  isPublished     Boolean  @default(true)
+  navGroup        String? // "support" → listed in the Support menu
+  sortOrder       Int      @default(0)
+  metaDescription String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Testimonial {
+  id          Int      @id @default(autoincrement())
+  name        String
+  location    String?
+  trip        String?
+  rating      Int      @default(5)
+  quote       String
+  avatar      String?
+  isPublished Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+model Setting {
+  key       String   @id
+  value     String // JSON
+  updatedAt DateTime @updatedAt
+}
+
+model Media {
+  id        Int      @id @default(autoincrement())
+  filename  String
+  url       String   @unique
+  mimeType  String
+  size      Int
+  width     Int?
+  height    Int?
+  alt       String   @default("")
+  createdAt DateTime @default(now())
+}
+
+// ─── Leads ───────────────────────────────────────────────────────────────────
+
+model Enquiry {
+  id            Int      @id @default(autoincrement())
+  tripId        Int?
+  trip          Trip?    @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  name          String
+  email         String
+  phone         String?
+  travellers    Int?
+  preferredDate String?
+  message       String
+  status        String   @default("NEW") // NEW | CONTACTED | QUOTED | BOOKED | LOST
+  notes         String?
+  source        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([status, createdAt])
+}
+
+model Subscriber {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+// ─── Admin accounts ──────────────────────────────────────────────────────────
+
+model AdminUser {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  name         String
+  passwordHash String
+  role         String    @default("EDITOR") // OWNER | EDITOR
+  totpSecret   String?
+  totpEnabled  Boolean   @default(false)
+  failedLogins Int       @default(0)
+  lockedUntil  DateTime?
+  tokenVersion Int       @default(0)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  auditLogs    AuditLog[]
+}
+
+model AuditLog {
+  id        Int        @id @default(autoincrement())
+  userId    Int?
+  user      AdminUser? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  entity    String
+  entityId  String?
+  ip        String?
+  createdAt DateTime   @default(now())
+
+  @@index([createdAt])
+}
