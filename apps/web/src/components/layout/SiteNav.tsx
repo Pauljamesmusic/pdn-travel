@@ -1,7 +1,8 @@
-import { ArrowRight, Check, ChevronDown, Globe, Menu, Moon, Phone, Search, Sun, X } from 'lucide-react';
+import { ArrowRight, Check, ChevronDown, Coins, Globe, Menu, Moon, Phone, Search, Sun, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, NavLink, useLocation } from 'react-router-dom';
+import { CURRENCIES, useCurrency } from '../../lib/currency';
 import { cx } from '../../lib/format';
 import { useBodyLock, useFocusTrap, useOnClickOutside, useScrolled } from '../../lib/hooks';
 import { LANGUAGES, useI18n } from '../../lib/i18n';
@@ -77,8 +78,9 @@ export function SiteNav() {
             >
               <Search size={20} aria-hidden="true" />
             </button>
-            <div className="hidden md:block">
+            <div className="hidden items-center gap-2 md:flex">
               <LanguageMenu compact />
+              <CurrencyMenu compact />
             </div>
             <ThemeButton className="hidden md:flex" />
             <ButtonLink to="/contact" icon className="hidden lg:inline-flex">
@@ -219,6 +221,67 @@ export function LanguageMenu({ compact = false, direction = 'down' }: { compact?
   );
 }
 
+/** Switches every price on the site (cards, trip pages, booking) into USD, INR, AED or NPR. */
+export function CurrencyMenu({ compact = false, direction = 'down' }: { compact?: boolean; direction?: 'down' | 'up' }) {
+  const { currency, setCurrency } = useCurrency();
+  const { t } = useI18n();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useOnClickOutside(ref, () => setOpen(false), open);
+  const current = CURRENCIES.find((c) => c.code === currency)!;
+
+  return (
+    <div ref={ref} className="relative" onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}>
+      <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={`${t('footer.currency')}: ${current.label}`}
+        onClick={() => setOpen((v) => !v)}
+        className={cx(
+          'inline-flex min-h-11 items-center gap-1.5 rounded-full border border-line-strong text-fg transition-colors hover:border-fg',
+          compact ? 'px-3 text-meta' : 'px-4 text-body-s',
+        )}
+      >
+        <Coins size={compact ? 14 : 16} aria-hidden="true" />
+        {current.code}
+        <ChevronDown size={14} className={cx('transition-transform', open && 'rotate-180')} aria-hidden="true" />
+      </button>
+      {open && (
+        <ul
+          role="listbox"
+          aria-label={t('footer.currency')}
+          className={cx(
+            'absolute end-0 z-10 w-48 overflow-hidden rounded-md border border-line bg-surface p-1.5 shadow-lg',
+            direction === 'up' ? 'bottom-full mb-2' : 'top-full mt-2',
+          )}
+        >
+          {CURRENCIES.map((c) => (
+            <li key={c.code}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={c.code === currency}
+                onClick={() => {
+                  setCurrency(c.code);
+                  setOpen(false);
+                }}
+                className={cx('flex min-h-11 w-full items-center justify-between gap-3 rounded-sm px-3 text-body-s', c.code === currency ? 'bg-brand-subtle text-fg-brand' : 'text-fg hover:bg-subtle')}
+              >
+                <span className="flex flex-col items-start leading-tight">
+                  <span>{c.code}</span>
+                  <span className="text-meta text-fg-subtle">{c.label}</span>
+                </span>
+                {c.code === currency && <Check size={16} aria-hidden="true" />}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 export function ThemeButton({ className }: { className?: string }) {
   const { resolved, toggle } = useTheme();
   const { t } = useI18n();
@@ -300,8 +363,9 @@ function MobileDrawer({ onClose, supportLinks }: { onClose: () => void; supportL
             </ul>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <LanguageMenu />
+            <CurrencyMenu />
             <ThemeButton />
           </div>
 

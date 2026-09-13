@@ -169,6 +169,7 @@ const ne: Dictionary = {
   'footer.terms': 'नियम तथा सर्तहरू',
   'footer.privacy': 'गोपनीयता नीति',
   'footer.backToTop': 'माथि जानुहोस्',
+  'footer.currency': 'मुद्रा',
   'footer.language': 'भाषा',
   'footer.theme': 'डार्क मोड',
 

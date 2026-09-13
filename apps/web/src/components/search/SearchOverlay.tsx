@@ -13,7 +13,8 @@ import {
 import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { qs, useApi } from '../../lib/api';
-import { cx, formatPrice } from '../../lib/format';
+import { useDisplayPrice } from '../../lib/currency';
+import { cx } from '../../lib/format';
 import { useBodyLock, useDebounced, useFocusTrap } from '../../lib/hooks';
 import { useI18n } from '../../lib/i18n';
 import type { SearchResult } from '../../lib/types';
@@ -75,7 +76,8 @@ type Item =
   | { kind: 'continent'; slug: string; label: string };
 
 function SearchOverlay({ initialQuery, onClose }: { initialQuery: string; onClose: () => void }) {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
+  const displayPrice = useDisplayPrice();
   const navigate = useNavigate();
   const [query, setQuery] = useState(initialQuery);
   const [active, setActive] = useState(0);
@@ -235,7 +237,7 @@ function SearchOverlay({ initialQuery, onClose }: { initialQuery: string; onClos
                       </span>
                     </span>
                   </span>
-                  <span className="shrink-0 text-meta text-fg-muted">{t('search.from', { price: formatPrice(trip.priceFrom, trip.currency, lang) })}</span>
+                  <span className="shrink-0 text-meta text-fg-muted">{t('search.from', { price: displayPrice(trip.priceFrom, trip.currency) })}</span>
                 </button>
               ))}
             </section>
@@ -275,7 +277,7 @@ function SearchOverlay({ initialQuery, onClose }: { initialQuery: string; onClos
                         </span>
                       </span>
                       {country.priceFrom != null && (
-                        <span className="shrink-0 text-meta text-fg-muted">{t('search.from', { price: formatPrice(country.priceFrom, 'USD', lang) })}</span>
+                        <span className="shrink-0 text-meta text-fg-muted">{t('search.from', { price: displayPrice(country.priceFrom, 'USD') })}</span>
                       )}
                     </button>
                   ))}

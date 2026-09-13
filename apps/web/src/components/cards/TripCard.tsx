@@ -1,6 +1,7 @@
 import { ArrowRight, Heart, MapPin, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { cx, formatPrice } from '../../lib/format';
+import { useDisplayPrice } from '../../lib/currency';
+import { cx } from '../../lib/format';
 import { useI18n } from '../../lib/i18n';
 import type { TripCard as TripCardData } from '../../lib/types';
 import { useWishlist } from '../../lib/wishlist';
@@ -12,12 +13,13 @@ import { SmartImage } from '../ui';
  * Touch devices (no hover) always show the price.
  */
 export function TripCard({ trip, className }: { trip: TripCardData; className?: string }) {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
+  const displayPrice = useDisplayPrice();
   const wishlist = useWishlist();
   const saved = wishlist.has(trip.slug);
   const strip = trip.photos.slice(1, 4);
   const extra = Math.max(trip.photoCount - 1 - strip.length, 0);
-  const price = formatPrice(trip.priceFrom, trip.currency, lang);
+  const price = displayPrice(trip.priceFrom, trip.currency);
 
   return (
     <article

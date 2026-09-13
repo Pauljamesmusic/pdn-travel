@@ -169,6 +169,7 @@ const hi: Dictionary = {
   'footer.terms': 'नियम और शर्तें',
   'footer.privacy': 'गोपनीयता नीति',
   'footer.backToTop': 'ऊपर जाएँ',
+  'footer.currency': 'मुद्रा',
   'footer.language': 'भाषा',
   'footer.theme': 'डार्क मोड',
 

@@ -2,6 +2,7 @@ import type { ComponentType } from 'react';
 import { createBrowserRouter, isRouteErrorResponse, Link, Navigate, RouterProvider, useRouteError } from 'react-router-dom';
 import { PublicLayout } from './components/layout/PublicLayout';
 import { SiteProvider } from './components/SiteContext';
+import { CurrencyProvider } from './lib/currency';
 import { I18nProvider } from './lib/i18n';
 import { ThemeProvider } from './lib/theme';
 
@@ -63,9 +64,11 @@ export function App() {
   return (
     <ThemeProvider>
       <I18nProvider>
-        <SiteProvider>
-          <RouterProvider router={router} />
-        </SiteProvider>
+        <CurrencyProvider>
+          <SiteProvider>
+            <RouterProvider router={router} />
+          </SiteProvider>
+        </CurrencyProvider>
       </I18nProvider>
     </ThemeProvider>
   );

@@ -6,7 +6,7 @@ import { safeHref } from '../../lib/format';
 import { useI18n } from '../../lib/i18n';
 import { useSite } from '../SiteContext';
 import { AccentTitle, Button } from '../ui';
-import { LanguageMenu, ThemeButton } from './SiteNav';
+import { CurrencyMenu, LanguageMenu, ThemeButton } from './SiteNav';
 
 const SOCIAL_ICONS = { facebook: Facebook, instagram: Instagram, twitter: Twitter, linkedin: Linkedin, youtube: Youtube } as const;
 
@@ -160,6 +160,7 @@ export function SiteFooter() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <LanguageMenu direction="up" />
+            <CurrencyMenu direction="up" />
             <ThemeButton />
             <button
               type="button"

@@ -168,6 +168,7 @@ export const en = {
   'footer.terms': 'Terms & Conditions',
   'footer.privacy': 'Privacy Policy',
   'footer.backToTop': 'Back to top',
+  'footer.currency': 'Currency',
   'footer.language': 'Language',
   'footer.theme': 'Dark mode',
 

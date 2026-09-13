@@ -169,6 +169,7 @@ const fr: Dictionary = {
   'footer.terms': 'Conditions générales',
   'footer.privacy': 'Politique de confidentialité',
   'footer.backToTop': 'Haut de page',
+  'footer.currency': 'Devise',
   'footer.language': 'Langue',
   'footer.theme': 'Mode sombre',
 

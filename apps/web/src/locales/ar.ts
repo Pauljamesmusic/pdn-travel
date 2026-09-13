@@ -169,6 +169,7 @@ const ar: Dictionary = {
   'footer.terms': 'الشروط والأحكام',
   'footer.privacy': 'سياسة الخصوصية',
   'footer.backToTop': 'العودة للأعلى',
+  'footer.currency': 'العملة',
   'footer.language': 'اللغة',
   'footer.theme': 'الوضع الداكن',
 

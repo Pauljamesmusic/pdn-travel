@@ -1,6 +1,7 @@
 import { Calendar, ChevronLeft, ChevronRight, MessageCircle, Minus, Plus, Users } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { cx, formatDate, formatPrice, waLink } from '../../lib/format';
+import { useDisplayPrice } from '../../lib/currency';
+import { cx, formatDate, waLink } from '../../lib/format';
 import { useI18n } from '../../lib/i18n';
 import type { Departure, TripDetail } from '../../lib/types';
 import { useSite } from '../SiteContext';
@@ -28,6 +29,7 @@ export function BookingCard({
   onEnquire: () => void;
 }) {
   const { t, lang } = useI18n();
+  const displayPrice = useDisplayPrice();
   const { site } = useSite();
   const [calendarOpen, setCalendarOpen] = useState(false);
   const firstDate = trip.departures[0] ? new Date(trip.departures[0].startDate) : new Date();
@@ -66,7 +68,7 @@ export function BookingCard({
     <div data-booking-card className="flex scroll-mt-28 flex-col gap-6 rounded-lg border border-line bg-surface p-6 shadow-md lg:p-8">
       <div className="flex items-baseline justify-between gap-2">
         <p className="flex items-baseline gap-2">
-          <span className="font-serif text-[36px] leading-[42px] text-fg">{formatPrice(price, trip.currency, lang)}</span>
+          <span className="font-serif text-[36px] leading-[42px] text-fg">{displayPrice(price, trip.currency)}</span>
           <span className="text-meta text-fg-subtle">{t('trip.perPerson')}</span>
         </p>
         <span className="text-meta text-fg-muted">{t('card.days', { count: trip.durationDays })}</span>

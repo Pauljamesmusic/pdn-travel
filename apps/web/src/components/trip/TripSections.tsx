@@ -1,6 +1,7 @@
 import { AlertTriangle, Building2, Check, ChevronDown, Clock, Info, Mountain, Utensils, X } from 'lucide-react';
 import { useState } from 'react';
-import { cx, formatDate, formatPrice } from '../../lib/format';
+import { useDisplayPrice } from '../../lib/currency';
+import { cx, formatDate } from '../../lib/format';
 import { useMediaQuery } from '../../lib/hooks';
 import { useI18n } from '../../lib/i18n';
 import type { Departure, TripDetail, TripSection } from '../../lib/types';
@@ -197,6 +198,7 @@ function Itinerary({ trip }: { trip: TripDetail }) {
 
 function DepartureList({ trip, note, onSelect }: { trip: TripDetail; note?: string; onSelect: (d: Departure) => void }) {
   const { t, lang } = useI18n();
+  const displayPrice = useDisplayPrice();
   if (!trip.departures.length) {
     return <p className="rounded-md bg-subtle p-5 text-body-m text-fg-muted">{t('trip.noDepartures')}</p>;
   }
@@ -220,7 +222,7 @@ function DepartureList({ trip, note, onSelect }: { trip: TripDetail; note?: stri
               </div>
               <div className="flex flex-col">
                 <span className="text-meta text-fg-subtle">{t('trip.price')}</span>
-                <span className="text-label text-fg">{formatPrice(d.priceOverride ?? trip.priceFrom, trip.currency, lang)}</span>
+                <span className="text-label text-fg">{displayPrice(d.priceOverride ?? trip.priceFrom, trip.currency)}</span>
               </div>
               <button
                 type="button"

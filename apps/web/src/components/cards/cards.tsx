@@ -1,6 +1,7 @@
 import { ArrowUpRight, Heart, MapPin, Quote, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { cx, formatPrice } from '../../lib/format';
+import { useDisplayPrice } from '../../lib/currency';
+import { cx } from '../../lib/format';
 import { useI18n } from '../../lib/i18n';
 import type { Activity, ContinentSummary, CountrySummary, Testimonial } from '../../lib/types';
 import { useWishlist } from '../../lib/wishlist';
@@ -40,7 +41,8 @@ export function ContinentCard({ continent, to, active = false }: { continent: Pi
 
 /** Figma “Country Card” — media with overlapping info panel. */
 export function CountryCard({ country, className }: { country: CountrySummary; className?: string }) {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
+  const displayPrice = useDisplayPrice();
   const wishlist = useWishlist();
   const key = `country:${country.slug}`;
   const saved = wishlist.has(key);
@@ -83,7 +85,7 @@ export function CountryCard({ country, className }: { country: CountrySummary; c
               {country.priceFrom != null ? (
                 <>
                   <span className="text-meta text-fg-subtle">{t('card.from')}</span>
-                  <span className="text-h4 text-fg">{formatPrice(country.priceFrom, 'USD', lang)}</span>
+                  <span className="text-h4 text-fg">{displayPrice(country.priceFrom, 'USD')}</span>
                 </>
               ) : (
                 <span className="text-meta text-fg-subtle">{t('search.noTrips')}</span>

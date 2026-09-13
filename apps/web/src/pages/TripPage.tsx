@@ -10,7 +10,8 @@ import { PhotoGallery } from '../components/trip/PhotoGallery';
 import { sectionAnchor, TripSections } from '../components/trip/TripSections';
 import { Badge, Button, ErrorState, Skeleton } from '../components/ui';
 import { useApi } from '../lib/api';
-import { formatDate, formatPrice } from '../lib/format';
+import { useDisplayPrice } from '../lib/currency';
+import { formatDate } from '../lib/format';
 import { useDocumentMeta } from '../lib/hooks';
 import { useI18n } from '../lib/i18n';
 import type { Departure, TripDetail } from '../lib/types';
@@ -25,7 +26,8 @@ function scrollToBookingCard(opts: ScrollIntoViewOptions) {
 
 export default function TripPage() {
   const { slug = '' } = useParams();
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
+  const displayPrice = useDisplayPrice();
   const { data: trip, error, loading, reload } = useApi<TripDetail>(`/trips/${encodeURIComponent(slug)}`);
   const [selected, setSelected] = useState<Departure | null>(null);
   const [travellers, setTravellers] = useState(2);
@@ -243,7 +245,7 @@ export default function TripPage() {
           <div className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-between gap-3 border-t border-line bg-surface/95 px-5 py-3 backdrop-blur-md lg:hidden [padding-bottom:max(0.75rem,env(safe-area-inset-bottom))]">
             <p className="flex flex-col">
               <span className="text-meta text-fg-subtle">{t('card.from')}</span>
-              <span className="text-h4 text-fg">{formatPrice(selected?.priceOverride ?? trip.priceFrom, trip.currency, lang)}</span>
+              <span className="text-h4 text-fg">{displayPrice(selected?.priceOverride ?? trip.priceFrom, trip.currency)}</span>
             </p>
             <Button size="sm" onClick={() => scrollToBookingCard({ behavior: 'smooth', block: 'start' })}>
               {t('trip.checkDates')}

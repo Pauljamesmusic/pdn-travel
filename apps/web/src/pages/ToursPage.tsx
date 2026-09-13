@@ -7,6 +7,7 @@ import { Icon } from '../components/Icon';
 import { PageHero } from '../components/PageHero';
 import { Button, EmptyState, ErrorState } from '../components/ui';
 import { qs, useApi } from '../lib/api';
+import { useDisplayPrice } from '../lib/currency';
 import { cx } from '../lib/format';
 import { useBodyLock, useDocumentMeta, useFocusTrap } from '../lib/hooks';
 import { useI18n } from '../lib/i18n';
@@ -25,6 +26,7 @@ const DURATION_OPTIONS = [
  */
 export default function ToursPage() {
   const { t } = useI18n();
+  const displayPrice = useDisplayPrice();
   const [params, setParams] = useSearchParams();
   const [sheetOpen, setSheetOpen] = useState(false);
   const { data: filters } = useApi<Filters>('/filters', { ttl: 5 * 60_000 });
@@ -67,7 +69,7 @@ export default function ToursPage() {
   if (current.country) chips.push({ label: countries.find((c) => c.slug === current.country)?.name ?? current.country, onRemove: () => update({ country: '' }) });
   selectedActivities.forEach((slug) => chips.push({ label: filters?.activities.find((a) => a.slug === slug)?.name ?? slug, onRemove: () => toggleActivity(slug) }));
   if (current.difficulty) chips.push({ label: current.difficulty, onRemove: () => update({ difficulty: '' }) });
-  if (current.maxPrice) chips.push({ label: t('filters.upTo', { value: `$${Number(current.maxPrice).toLocaleString()}` }), onRemove: () => update({ maxPrice: '' }) });
+  if (current.maxPrice) chips.push({ label: t('filters.upTo', { value: displayPrice(Number(current.maxPrice), 'USD') }), onRemove: () => update({ maxPrice: '' }) });
   if (current.minDays || current.maxDays) {
     const d = DURATION_OPTIONS.find((o) => o.min === current.minDays && o.max === current.maxDays);
     chips.push({ label: d ? t(d.key) : `${current.minDays || 1}–${current.maxDays || '∞'}`, onRemove: () => update({ minDays: '', maxDays: '' }) });
@@ -249,6 +251,7 @@ function FilterPanel({
   toggleActivity: (slug: string) => void;
 }) {
   const { t } = useI18n();
+  const displayPrice = useDisplayPrice();
   return (
     <>
       <FilterGroup title={t('filters.continent')}>
@@ -303,7 +306,7 @@ function FilterPanel({
         <RadioList
           name="price"
           value={current.maxPrice}
-          options={[{ value: '', label: t('filters.any') }, ...PRICE_STEPS.map((p) => ({ value: String(p), label: t('filters.upTo', { value: `$${p.toLocaleString()}` }) }))]}
+          options={[{ value: '', label: t('filters.any') }, ...PRICE_STEPS.map((p) => ({ value: String(p), label: t('filters.upTo', { value: displayPrice(p, 'USD') }) }))]}
           onChange={(v) => update({ maxPrice: v })}
         />
       </FilterGroup>

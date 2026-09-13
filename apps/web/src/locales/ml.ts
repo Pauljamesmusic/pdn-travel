@@ -169,6 +169,7 @@ const ml: Dictionary = {
   'footer.terms': 'നിബന്ധനകളും വ്യവസ്ഥകളും',
   'footer.privacy': 'സ്വകാര്യതാ നയം',
   'footer.backToTop': 'മുകളിലേക്ക്',
+  'footer.currency': 'കറൻസി',
   'footer.language': 'ഭാഷ',
   'footer.theme': 'ഡാർക്ക് മോഡ്',
 
