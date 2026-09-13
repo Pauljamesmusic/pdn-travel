@@ -1,4 +1,4 @@
-import { KeyRound, Lock, Mail, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, KeyRound, Lock, Mail, ShieldCheck } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '../components/ui';
@@ -18,6 +18,7 @@ export default function LoginPage({ onSignedIn }: { onSignedIn: (user: AdminUser
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const finish = (user: AdminUser) => {
     setPassword('');
@@ -109,7 +110,23 @@ export default function LoginPage({ onSignedIn }: { onSignedIn: (user: AdminUser
                 <span className="text-meta font-semibold text-fg">Password</span>
                 <span className="relative">
                   <Lock size={18} className="absolute start-4 top-1/2 -translate-y-1/2 text-fg-subtle" aria-hidden="true" />
-                  <input type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} className={inputClass} />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className={`${inputClass} pe-11`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-pressed={showPassword}
+                    className="absolute end-4 top-1/2 -translate-y-1/2 text-fg-subtle hover:text-fg"
+                  >
+                    {showPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
+                  </button>
                 </span>
               </label>
               <label className="flex min-h-11 items-center gap-3 text-body-s text-fg">
