@@ -114,18 +114,27 @@ export function FeatureCard({ icon, title, body, accent = false }: { icon: strin
   );
 }
 
+/** Figma “Activity Card” (Frame 16) — full-bleed photo, glass icon chip and a frosted info panel. */
 export function ActivityCard({ activity }: { activity: Activity }) {
   const { t } = useI18n();
   return (
-    <Link to={`/activities/${activity.slug}`} className="group relative flex aspect-[4/5] flex-col justify-between overflow-hidden rounded-lg bg-muted p-5 text-ink-0">
+    <Link
+      to={`/activities/${activity.slug}`}
+      className="@container group relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-lg bg-muted text-ink-0 outline-none focus-visible:ring-2 focus-visible:ring-line-brand"
+    >
       <SmartImage src={activity.image ?? undefined} alt="" className="absolute inset-0 size-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]" />
-      <span className="absolute inset-0 bg-gradient-to-b from-ink-950/30 via-ink-950/10 to-ink-950/85" aria-hidden="true" />
-      <span className="relative flex size-12 items-center justify-center rounded-full bg-white/15 backdrop-blur-md transition-colors duration-200 group-hover:bg-red-600">
+      <span
+        className="absolute start-4 top-4 flex size-11 items-center justify-center rounded-full bg-white/20 ring-1 ring-white/25 ring-inset backdrop-blur-sm transition-colors duration-200 group-hover:bg-red-600 group-hover:ring-red-600"
+        aria-hidden="true"
+      >
         <Icon name={activity.icon} size={22} />
       </span>
-      <span className="relative flex flex-col gap-1">
-        <span className="font-serif text-[1.75rem] leading-8">{activity.name}</span>
-        <span className="text-body-s opacity-85">{t('card.trips', { count: activity.tripCount })}</span>
+      <span className="relative flex flex-col border-t border-white/10 bg-ink-950/40 px-3 pt-3 pb-4 backdrop-blur-lg @min-[15rem]:px-4 @min-[15rem]:pt-4 @min-[15rem]:pb-5">
+        <span className="line-clamp-2 font-serif text-[1.25rem] leading-tight @min-[15rem]:text-[1.75rem]">{activity.name}</span>
+        <span className="text-meta text-ink-0/90 @min-[15rem]:text-body-s">{t('card.trips', { count: activity.tripCount })}</span>
+        {activity.description && (
+          <span className="mt-3 hidden min-h-[3lh] text-meta text-ink-0/70 @min-[15rem]:line-clamp-3">{activity.description}</span>
+        )}
       </span>
     </Link>
   );

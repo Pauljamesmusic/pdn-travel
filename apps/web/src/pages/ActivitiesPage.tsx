@@ -28,9 +28,8 @@ export default function ActivitiesPage() {
           {loading && !data
             ? Array.from({ length: 8 }, (_, i) => <Skeleton key={i} className="aspect-[4/5] rounded-lg" />)
             : sorted.map((activity, i) => (
-                <div key={activity.slug} className="flex flex-col gap-3 reveal" style={{ ['--reveal-delay' as string]: `${(i % 4) * 60}ms` }}>
+                <div key={activity.slug} className="reveal" style={{ ['--reveal-delay' as string]: `${(i % 4) * 60}ms` }}>
                   <ActivityCard activity={activity} />
-                  {activity.description && <p className="line-clamp-3 text-body-s text-fg-muted max-sm:hidden">{activity.description}</p>}
                 </div>
               ))}
         </div>
