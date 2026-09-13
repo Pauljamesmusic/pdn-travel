@@ -85,7 +85,7 @@ export default function LoginPage({ onSignedIn }: { onSignedIn: (user: AdminUser
       <div className="flex items-center justify-center px-5 py-12">
         <div className="flex w-full max-w-sm flex-col gap-8">
           <div className="flex flex-col gap-2">
-            <img src="/brand/pdn-mark.png" alt="" className="mb-4 size-12 lg:hidden" />
+            <img src="/brand/pdn-mark.png" alt="" className="mb-4 size-12 brightness-0 invert lg:hidden" />
             <h2 className="text-h2 text-fg">{step.kind === 'password' ? 'Sign in' : 'Two-factor check'}</h2>
             <p className="text-body-s text-fg-muted">
               {step.kind === 'password' ? 'Use your PDN admin account.' : 'Enter the 6-digit code from your authenticator app.'}
