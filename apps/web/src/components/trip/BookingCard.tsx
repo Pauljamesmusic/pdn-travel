@@ -63,7 +63,7 @@ export function BookingCard({
   };
 
   return (
-    <div id="booking" className="flex scroll-mt-28 flex-col gap-6 rounded-lg border border-line bg-surface p-6 shadow-md lg:p-8">
+    <div data-booking-card className="flex scroll-mt-28 flex-col gap-6 rounded-lg border border-line bg-surface p-6 shadow-md lg:p-8">
       <div className="flex items-baseline justify-between gap-2">
         <p className="flex items-baseline gap-2">
           <span className="font-serif text-[36px] leading-[42px] text-fg">{formatPrice(price, trip.currency, lang)}</span>

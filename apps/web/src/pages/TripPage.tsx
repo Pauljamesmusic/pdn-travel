@@ -16,6 +16,13 @@ import { useI18n } from '../lib/i18n';
 import type { Departure, TripDetail } from '../lib/types';
 import NotFoundPage from './NotFoundPage';
 
+// BookingCard renders twice (desktop + mobile layout), only one is visible at a time.
+function scrollToBookingCard(opts: ScrollIntoViewOptions) {
+  const cards = document.querySelectorAll<HTMLElement>('[data-booking-card]');
+  const visible = Array.from(cards).find((el) => el.offsetParent !== null);
+  visible?.scrollIntoView(opts);
+}
+
 export default function TripPage() {
   const { slug = '' } = useParams();
   const { t, lang } = useI18n();
@@ -54,7 +61,7 @@ export default function TripPage() {
 
   const selectDeparture = (d: Departure) => {
     setSelected(d);
-    document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    scrollToBookingCard({ behavior: 'smooth', block: 'center' });
   };
 
   const enquire = () => {
@@ -238,7 +245,7 @@ export default function TripPage() {
               <span className="text-meta text-fg-subtle">{t('card.from')}</span>
               <span className="text-h4 text-fg">{formatPrice(selected?.priceOverride ?? trip.priceFrom, trip.currency, lang)}</span>
             </p>
-            <Button size="sm" onClick={() => document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+            <Button size="sm" onClick={() => scrollToBookingCard({ behavior: 'smooth', block: 'start' })}>
               {t('trip.checkDates')}
             </Button>
           </div>
