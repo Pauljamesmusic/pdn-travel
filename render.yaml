@@ -2,7 +2,10 @@ services:
   - type: web
     name: pdn-travel
     runtime: node
-    plan: free
+    # A persistent disk (below) needs a paid plan — Render's free web services have no
+    # attachable disk, so their filesystem (and anything on it) is wiped on every restart,
+    # including the automatic idle sleep/wake cycle, not just on deploys.
+    plan: starter
     region: oregon
     healthCheckPath: /api/health
     # db:push syncs the schema without dropping data; db:seed only fills in a genuinely
@@ -10,11 +13,19 @@ services:
     # step ever touches existing content, so admin edits survive every deploy.
     buildCommand: npm install --include=dev && npm run db:push -w apps/api && npm run db:seed -w apps/api && npm run build
     startCommand: npm run start -w apps/api
+    # Persistent disk: the SQLite database file and uploaded images both live here, so
+    # they survive deploys and restarts instead of resetting to the last build's state.
+    disk:
+      name: pdn-data
+      mountPath: /data
+      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        value: file:./prod.db
+        value: file:/data/prod.db
+      - key: UPLOADS_DIR
+        value: /data/uploads
       - key: JWT_SECRET
         generateValue: true
       - key: COOKIE_SECURE

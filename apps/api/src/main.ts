@@ -4,7 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
 import type { NextFunction, Request, Response } from 'express';
-import { existsSync } from 'fs';
+import { existsSync, mkdirSync } from 'fs';
 import helmet from 'helmet';
 import { join } from 'path';
 import { AppModule } from './app.module';
@@ -38,7 +38,10 @@ async function bootstrap() {
     }),
   );
 
-  // Uploaded images (already re-encoded to WebP by the media service)
+  // Uploaded images (already re-encoded to WebP by the media service). Create the folder
+  // up front — on a fresh persistent disk (see UPLOADS_DIR / render.yaml) nothing has been
+  // uploaded yet, so it won't exist until the first upload otherwise.
+  mkdirSync(uploadsDir(), { recursive: true });
   app.useStaticAssets(uploadsDir(), {
     prefix: '/uploads',
     maxAge: '30d',

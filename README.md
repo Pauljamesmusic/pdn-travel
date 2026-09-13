@@ -112,9 +112,9 @@ pdn-travel/
 4. Serve `apps/web/dist` and proxy `/api` and `/uploads` to the API on the same origin.
 5. Keep `apps/api/uploads/` on persistent storage and back it up with the database.
 
-> **Render free plan note:** `render.yaml` currently deploys to Render's **free** web service plan, which has no persistent disk — its filesystem (and the SQLite file on it) is reset on every restart, including the automatic sleep/wake cycle after ~15 minutes idle, not just on deploys. The build no longer force-wipes the database on deploy (see `db:seed`'s admin-edits-are-kept behaviour above), but content will still reset itself when the free instance restarts on its own. To make admin content genuinely permanent, do **one** of:
-> - Attach a Render **persistent disk** to the service (needs a paid plan) and point `DATABASE_URL` and the uploads folder at it, or
-> - Switch to a managed Postgres database (step 3 above) for content, plus object storage (e.g. S3-compatible) for uploaded images instead of the local `uploads/` folder.
+> **Render persistent disk:** `render.yaml` provisions a 1GB persistent disk mounted at `/data`, with `DATABASE_URL` and `UPLOADS_DIR` pointed at it — so the database and uploaded images now survive restarts and deploys instead of resetting to the last build. This needs a **paid** plan (`plan: starter`); Render's free web services can't attach a disk at all.
+>
+> If this service already exists in your Render dashboard from before this disk was added, pushing `render.yaml` alone may not upgrade it — Render sometimes needs it applied manually the first time: open the service in the dashboard, change its plan off Free, and add a disk (name `pdn-data`, mount path `/data`, 1GB) if one isn't already attached, then redeploy. After that, further `render.yaml` edits should sync automatically.
 
 ## Design system
 
