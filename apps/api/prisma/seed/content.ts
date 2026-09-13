@@ -176,7 +176,7 @@ export const pages: {
         ],
       },
       { type: 'quote', text: 'Atithi Devo Bhava — the guest is God.', attribution: 'The philosophy of hospitality behind every PDN journey' },
-      { type: 'cta', heading: 'Ready to plan your journey?', body: 'Tell us where you dream of going and our travel experts will craft the details.', buttonLabel: 'Talk to an expert', buttonLink: '/contact' },
+      { type: 'cta', heading: 'Ready to plan your journey?', body: 'Tell us where you dream of going and our travel experts will craft the details.', buttonLabel: 'Talk to an expert', buttonLink: '/contact', video: '/media/about-cta.mp4' },
     ],
   },
   {

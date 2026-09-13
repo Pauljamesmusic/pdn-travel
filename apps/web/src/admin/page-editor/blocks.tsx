@@ -92,7 +92,13 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     label: 'Call to action',
     hint: 'Dark banner with a button',
     icon: 'megaphone',
-    fields: [HEADING, { key: 'body', label: 'Text', kind: 'textarea', wide: true }, { key: 'buttonLabel', label: 'Button label', placeholder: 'Plan my trip' }, { key: 'buttonLink', label: 'Button link', placeholder: '/contact' }],
+    fields: [
+      HEADING,
+      { key: 'body', label: 'Text', kind: 'textarea', wide: true },
+      { key: 'buttonLabel', label: 'Button label', placeholder: 'Plan my trip' },
+      { key: 'buttonLink', label: 'Button link', placeholder: '/contact' },
+      { key: 'video', label: 'Video URL', placeholder: '/media/about-cta.mp4', hint: 'Optional. Path to an uploaded video file, shown as a player alongside the text.', wide: true },
+    ],
   },
 };
 

@@ -246,20 +246,29 @@ function Block({ block }: { block: PageBlock }) {
         </section>
       );
 
-    case 'cta':
+    case 'cta': {
+      const video = str(block.video);
       return (
-        <section data-theme="dark" className="flex flex-col items-start gap-6 rounded-xl bg-canvas p-8 sm:p-12 lg:flex-row lg:items-center lg:justify-between" style={{ backgroundImage: 'radial-gradient(ellipse 40% 90% at 90% 50%, rgba(236,28,46,0.35), transparent)' }}>
-          <div className="flex max-w-xl flex-col gap-3">
-            <h2 className="text-h1 text-fg">{str(block.heading)}</h2>
-            {str(block.body) && <p className="text-body-m text-fg-muted">{str(block.body)}</p>}
+        <section data-theme="dark" className="flex flex-col items-start gap-8 rounded-xl bg-canvas p-8 sm:p-12 lg:flex-row lg:items-center lg:justify-between" style={{ backgroundImage: 'radial-gradient(ellipse 40% 90% at 90% 50%, rgba(236,28,46,0.35), transparent)' }}>
+          <div className="flex max-w-xl flex-col gap-6">
+            <div className="flex flex-col gap-3">
+              <h2 className="text-h1 text-fg">{str(block.heading)}</h2>
+              {str(block.body) && <p className="text-body-m text-fg-muted">{str(block.body)}</p>}
+            </div>
+            {str(block.buttonLabel) && (
+              <div>
+                <ButtonLink to={safeHref(str(block.buttonLink)) ?? '/contact'} icon>
+                  {str(block.buttonLabel)}
+                </ButtonLink>
+              </div>
+            )}
           </div>
-          {str(block.buttonLabel) && (
-            <ButtonLink to={safeHref(str(block.buttonLink)) ?? '/contact'} icon>
-              {str(block.buttonLabel)}
-            </ButtonLink>
+          {video && (
+            <video src={video} controls playsInline preload="metadata" className="aspect-video w-full rounded-lg bg-black shadow-lg lg:w-[420px] lg:shrink-0" />
           )}
         </section>
       );
+    }
 
     default:
       return null;
