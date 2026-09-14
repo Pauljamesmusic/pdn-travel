@@ -15,11 +15,6 @@ export function allowedOrigins(): string[] {
     .filter(Boolean);
 }
 
-/** Canonical public origin for absolute URLs (sitemap, Open Graph) — the first configured WEB_ORIGIN. */
-export function siteUrl(): string {
-  return allowedOrigins()[0] ?? 'http://localhost:5173';
-}
-
 export function cookieOptions(maxAgeMs: number) {
   return {
     httpOnly: true,

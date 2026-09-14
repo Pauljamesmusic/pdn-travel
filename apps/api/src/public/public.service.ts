@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { parseJson, startOfUtcDay } from '../common/utils';
-import { siteUrl } from '../common/security';
 import { PrismaService } from '../prisma/prisma.service';
 import type { EnquiryDto, TripQueryDto } from './public.dto';
 
@@ -437,9 +436,11 @@ export class PublicService {
     ];
   }
 
-  async getSitemapXml(): Promise<string> {
+  // `base` comes from the actual incoming request (see main.ts), not the WEB_ORIGIN env var —
+  // that stays correct even if WEB_ORIGIN drifts from the real public hostname (e.g. after a
+  // Render service rename), which it has done at least once already.
+  async getSitemapXml(base: string): Promise<string> {
     const urls = await this.getSitemapUrls();
-    const base = siteUrl();
     const entries = urls
       .map(({ path, lastmod }) => {
         const loc = `<loc>${escapeXml(`${base}${path}`)}</loc>`;
@@ -450,8 +451,8 @@ export class PublicService {
     return `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${entries}</urlset>`;
   }
 
-  getRobotsTxt(): string {
-    return ['User-agent: *', 'Allow: /', 'Disallow: /admin', `Sitemap: ${siteUrl()}/sitemap.xml`, ''].join('\n');
+  getRobotsTxt(base: string): string {
+    return ['User-agent: *', 'Allow: /', 'Disallow: /admin', `Sitemap: ${base}/sitemap.xml`, ''].join('\n');
   }
 
   async subscribe(email: string) {

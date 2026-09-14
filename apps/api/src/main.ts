@@ -83,11 +83,15 @@ async function bootstrap() {
   // swallow every path it doesn't recognize (including these) and serve index.html instead.
   const publicService = app.get(PublicService);
   const httpAdapter = app.getHttpAdapter().getInstance();
-  httpAdapter.get('/robots.txt', (_req: Request, res: Response) => {
-    res.type('text/plain').send(publicService.getRobotsTxt());
+  // Derived from the request itself (protocol + Host header, trustworthy behind Render's proxy
+  // thanks to `trust proxy` above) rather than the WEB_ORIGIN env var, so these stay correct
+  // even if that env var drifts from the real public hostname.
+  const requestBaseUrl = (req: Request) => `${req.protocol}://${req.get('host')}`;
+  httpAdapter.get('/robots.txt', (req: Request, res: Response) => {
+    res.type('text/plain').send(publicService.getRobotsTxt(requestBaseUrl(req)));
   });
-  httpAdapter.get('/sitemap.xml', async (_req: Request, res: Response) => {
-    res.type('application/xml').send(await publicService.getSitemapXml());
+  httpAdapter.get('/sitemap.xml', async (req: Request, res: Response) => {
+    res.type('application/xml').send(await publicService.getSitemapXml(requestBaseUrl(req)));
   });
 
   // Same-origin deploy: serve the built web app alongside the API so admin auth
