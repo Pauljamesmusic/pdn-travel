@@ -17,8 +17,8 @@ import { CurrentUser, type SessionUser } from '../common/admin-auth.guard';
 import { clientIp } from '../common/security';
 import { audit } from '../common/utils';
 import { PrismaService } from '../prisma/prisma.service';
-import { BulkTripsDto, TripDto, TripStatusDto } from './trips.dto';
-import { type AdminTripQuery, TripsAdminService } from './trips.service';
+import { AdminTripListQueryDto, BulkTripsDto, TripDto, TripStatusDto } from './trips.dto';
+import { TripsAdminService } from './trips.service';
 
 @Controller('admin/trips')
 export class TripsAdminController {
@@ -28,7 +28,7 @@ export class TripsAdminController {
   ) {}
 
   @Get()
-  list(@Query() query: AdminTripQuery) {
+  list(@Query() query: AdminTripListQueryDto) {
     return this.trips.list(query);
   }
 

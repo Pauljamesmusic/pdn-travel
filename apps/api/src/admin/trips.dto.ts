@@ -118,6 +118,17 @@ export class TripDto {
   departures: DepartureDto[];
 }
 
+export class AdminTripListQueryDto {
+  @IsOptional() @IsString() @MaxLength(200) q?: string;
+  @IsOptional() @IsIn(['published', 'draft', 'featured']) status?: string;
+  @IsOptional() @Type(() => Number) @IsInt() countryId?: number;
+  @IsOptional() @Type(() => Number) @IsInt() continentId?: number;
+  @IsOptional() @Type(() => Number) @IsInt() activityId?: number;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) page?: number;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(100) limit?: number;
+  @IsOptional() @IsIn(['title', 'price']) sort?: string;
+}
+
 export class TripStatusDto {
   @IsOptional() @IsBoolean() isPublished?: boolean;
   @IsOptional() @IsBoolean() isFeatured?: boolean;

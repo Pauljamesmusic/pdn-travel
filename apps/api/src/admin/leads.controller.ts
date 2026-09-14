@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Header, Param, ParseIntPipe, Patch, Query } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsDateString, IsIn, IsInt, IsOptional, IsString, Min, MaxLength } from 'class-validator';
 import { CurrentUser, type SessionUser } from '../common/admin-auth.guard';
 import { audit } from '../common/utils';
 import { PrismaService } from '../prisma/prisma.service';
@@ -12,12 +13,15 @@ class EnquiryUpdateDto {
   @IsOptional() @IsString() @MaxLength(5000) notes?: string;
 }
 
-interface EnquiryQuery {
-  status?: string;
-  q?: string;
-  page?: string;
-  from?: string;
-  to?: string;
+class EnquiryListQueryDto {
+  @IsOptional() @IsIn(ENQUIRY_STATUSES as unknown as string[]) status?: string;
+  @IsOptional() @IsString() @MaxLength(200) q?: string;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) page?: number;
+  // Plain YYYY-MM-DD, validated before it ever reaches `new Date(...)` below — an invalid
+  // string there produces an Invalid Date that throws a raw RangeError on serialization,
+  // which the PrismaExceptionFilter doesn't catch, surfacing as an unhandled 500.
+  @IsOptional() @IsDateString() from?: string;
+  @IsOptional() @IsDateString() to?: string;
 }
 
 /** Prevents spreadsheet formula injection when admins open the export. */
@@ -31,9 +35,9 @@ function csvCell(value: unknown): string {
 export class EnquiriesAdminController {
   constructor(private readonly prisma: PrismaService) {}
 
-  private where(query: EnquiryQuery): Prisma.EnquiryWhereInput {
+  private where(query: EnquiryListQueryDto): Prisma.EnquiryWhereInput {
     const and: Prisma.EnquiryWhereInput[] = [];
-    if (query.status && (ENQUIRY_STATUSES as readonly string[]).includes(query.status)) and.push({ status: query.status });
+    if (query.status) and.push({ status: query.status });
     if (query.q?.trim()) {
       const q = query.q.trim();
       and.push({ OR: [{ name: { contains: q } }, { email: { contains: q } }, { message: { contains: q } }] });
@@ -46,10 +50,10 @@ export class EnquiriesAdminController {
   }
 
   @Get()
-  async list(@Query() query: EnquiryQuery) {
+  async list(@Query() query: EnquiryListQueryDto) {
     const where = this.where(query);
     const pageSize = 25;
-    const page = Math.max(Number(query.page) || 1, 1);
+    const page = query.page ?? 1;
     const [total, items, counts] = await Promise.all([
       this.prisma.enquiry.count({ where }),
       this.prisma.enquiry.findMany({
@@ -74,7 +78,7 @@ export class EnquiriesAdminController {
   @Get('export.csv')
   @Header('Content-Type', 'text/csv; charset=utf-8')
   @Header('Content-Disposition', 'attachment; filename="pdn-enquiries.csv"')
-  async export(@Query() query: EnquiryQuery) {
+  async export(@Query() query: EnquiryListQueryDto) {
     const rows = await this.prisma.enquiry.findMany({
       where: this.where(query),
       orderBy: { createdAt: 'desc' },

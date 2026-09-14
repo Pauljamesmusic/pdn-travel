@@ -69,6 +69,10 @@ class ReorderDto {
   @IsArray() @ArrayMaxSize(500) @IsInt({ each: true }) ids: number[];
 }
 
+class CountryListQueryDto {
+  @IsOptional() @Type(() => Number) @IsInt() continentId?: number;
+}
+
 const clean = <T extends object>(dto: T) =>
   Object.fromEntries(Object.entries(dto).map(([k, v]) => [k, v === '' ? null : v])) as T;
 
@@ -133,9 +137,9 @@ export class CountriesAdminController {
   constructor(private readonly prisma: PrismaService) {}
 
   @Get()
-  list(@Query('continentId') continentId?: string) {
+  list(@Query() query: CountryListQueryDto) {
     return this.prisma.country.findMany({
-      where: continentId ? { continentId: Number(continentId) } : undefined,
+      where: query.continentId != null ? { continentId: query.continentId } : undefined,
       orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
       include: { continent: { select: { id: true, name: true } }, _count: { select: { trips: true } } },
     });

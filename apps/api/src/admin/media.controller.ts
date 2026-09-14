@@ -29,6 +29,14 @@ const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/a
 const MAX_BYTES = 15 * 1024 * 1024;
 const MAX_WIDTH = 2400;
 
+function reencode(buffer: Buffer) {
+  return sharp(buffer, { failOn: 'error', limitInputPixels: 80_000_000 })
+    .rotate()
+    .resize({ width: MAX_WIDTH, withoutEnlargement: true })
+    .webp({ quality: 82 })
+    .toBuffer({ resolveWithObject: true });
+}
+
 class MediaUpdateDto {
   @IsString() @MaxLength(200) alt: string;
 }
@@ -39,8 +47,9 @@ export class MediaAdminController {
 
   @Get()
   list(@Query('q') q?: string) {
+    const term = q?.trim().slice(0, 200);
     return this.prisma.media.findMany({
-      where: q?.trim() ? { OR: [{ filename: { contains: q.trim() } }, { alt: { contains: q.trim() } }] } : undefined,
+      where: term ? { OR: [{ filename: { contains: term } }, { alt: { contains: term } }] } : undefined,
       orderBy: { createdAt: 'desc' },
       take: 500,
     });
@@ -70,13 +79,9 @@ export class MediaAdminController {
     const saved = [];
     for (const file of files) {
       // Re-encoding through sharp proves the file really is an image and strips any embedded payloads/metadata.
-      let output: { data: Buffer; info: sharp.OutputInfo };
+      let output: Awaited<ReturnType<typeof reencode>>;
       try {
-        output = await sharp(file.buffer, { failOn: 'error', limitInputPixels: 80_000_000 })
-          .rotate()
-          .resize({ width: MAX_WIDTH, withoutEnlargement: true })
-          .webp({ quality: 82 })
-          .toBuffer({ resolveWithObject: true });
+        output = await reencode(file.buffer);
       } catch {
         throw new BadRequestException(`${file.originalname} could not be read as an image`);
       }

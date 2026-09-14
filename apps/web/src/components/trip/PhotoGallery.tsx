@@ -44,7 +44,12 @@ export function PhotoGallery({ photos, title }: { photos: Photo[]; title: string
             className={cx('group relative overflow-hidden bg-muted', i === 0 && 'col-span-2 row-span-2', photos.length === 1 && 'col-span-4', photos.length === 2 && i === 1 && 'col-span-2 row-span-2')}
             aria-label={t('trip.photoOf', { n: i + 1, total: photos.length })}
           >
-            <SmartImage src={sized(photo.url, i === 0 ? 1600 : 800)} alt={photo.alt || title} className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
+            <SmartImage
+              src={sized(photo.url, i === 0 ? 1600 : 800)}
+              alt={photo.alt || title}
+              priority={i === 0}
+              className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+            />
             <span className="absolute inset-0 bg-ink-950/0 transition-colors group-hover:bg-ink-950/10" aria-hidden="true" />
           </button>
         ))}
@@ -71,7 +76,7 @@ export function PhotoGallery({ photos, title }: { photos: Photo[]; title: string
         >
           {photos.map((photo, i) => (
             <button key={photo.url + i} type="button" className="w-full shrink-0 snap-center px-5" onClick={(e) => launch(i, e.currentTarget)} aria-label={t('trip.photoOf', { n: i + 1, total: photos.length })}>
-              <SmartImage src={sized(photo.url, 900)} alt={photo.alt || title} className="aspect-[4/3] w-full rounded-lg object-cover" />
+              <SmartImage src={sized(photo.url, 900)} alt={photo.alt || title} priority={i === 0} className="aspect-[4/3] w-full rounded-lg object-cover" />
             </button>
           ))}
         </div>
@@ -129,7 +134,7 @@ function Lightbox({ photos, start, title, onClose }: { photos: Photo[]; start: n
         </button>
       </div>
       <div className="relative flex flex-1 items-center justify-center px-4 pb-4 sm:px-20">
-        <img key={photo.url} src={sized(photo.url, 2000)} alt={photo.alt || title} className="max-h-full max-w-full rounded-md object-contain animate-fade-up" />
+        <img key={photo.url} src={sized(photo.url, 2000)} alt={photo.alt || title} decoding="async" className="max-h-full max-w-full rounded-md object-contain animate-fade-up" />
         {photos.length > 1 && (
           <>
             <button type="button" onClick={() => go(-1)} aria-label={t('section.prev')} className="absolute start-3 top-1/2 flex size-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 max-sm:hidden">

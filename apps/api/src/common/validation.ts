@@ -1,16 +1,23 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus } from '@nestjs/common';
+import { applyDecorators, ArgumentsHost, Catch, ExceptionFilter, HttpStatus } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import type { Response } from 'express';
-import { ValidationOptions, Matches } from 'class-validator';
+import { ValidationOptions, Matches, MaxLength } from 'class-validator';
 
 /** Relative site paths (/uploads/..., /media/...) or https URLs. Blocks javascript:, data: etc. */
 export const SAFE_URL = /^(\/(?!\/)[^\s<>"'`]*|https:\/\/[^\s<>"'`]+)$/;
+const SAFE_URL_MAX_LENGTH = 1000;
 
+// Composed so every `@IsSafeUrl()` field also gets the same length cap as the `isSafeUrl()`
+// runtime check below — the bare `Matches` regex has no length limit of its own and would
+// otherwise let a multi-megabyte string through as long as it matched the pattern.
 export const IsSafeUrl = (options?: ValidationOptions) =>
-  Matches(SAFE_URL, { message: 'Use an uploaded image or an https:// link', ...options });
+  applyDecorators(
+    MaxLength(SAFE_URL_MAX_LENGTH, options),
+    Matches(SAFE_URL, { message: 'Use an uploaded image or an https:// link', ...options }),
+  );
 
 export function isSafeUrl(value: unknown): value is string {
-  return typeof value === 'string' && value.length <= 1000 && SAFE_URL.test(value);
+  return typeof value === 'string' && value.length <= SAFE_URL_MAX_LENGTH && SAFE_URL.test(value);
 }
 
 const IMAGE_URL_KEYS = new Set(['image', 'photo', 'avatar', 'logo', 'url']);

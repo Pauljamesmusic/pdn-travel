@@ -33,7 +33,7 @@ export default function TripPage() {
   const [travellers, setTravellers] = useState(2);
   const [enquiryKey, setEnquiryKey] = useState(0);
 
-  useDocumentMeta(trip?.metaTitle ?? trip?.title, trip?.metaDescription ?? trip?.summary);
+  useDocumentMeta(trip?.metaTitle ?? trip?.title, trip?.metaDescription ?? trip?.summary, trip?.coverImage ?? trip?.photos[0]?.url);
 
   useEffect(() => {
     setSelected(trip?.departures.find((d) => d.seatsLeft > 0) ?? null);

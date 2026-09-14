@@ -4,6 +4,14 @@ import { Link } from 'react-router-dom';
 import { cx } from '../lib/format';
 import { useI18n } from '../lib/i18n';
 
+const UNSPLASH_WIDTHS = [640, 1024, 1600, 2000];
+
+/** Unsplash serves any width via its `w=` param — build a srcset so phones don't fetch the same 2000px desktop asset as desktop. Other sources (CMS uploads, local media) are left as a single `src`, unchanged. */
+function unsplashSrcSet(url: string): string | undefined {
+  if (!url.includes('images.unsplash.com') || !/[?&]w=\d+/.test(url)) return undefined;
+  return UNSPLASH_WIDTHS.map((w) => `${url.replace(/([?&])w=\d+/, `$1w=${w}`)} ${w}w`).join(', ');
+}
+
 export interface Crumb {
   label: string;
   to?: string;
@@ -31,7 +39,14 @@ export function PageHero({
   return (
     <section data-theme="dark" className="relative isolate overflow-hidden bg-canvas">
       {image ? (
-        <img src={image} alt="" className="absolute inset-0 -z-10 size-full object-cover" fetchPriority="high" />
+        <img
+          src={image}
+          srcSet={unsplashSrcSet(image)}
+          sizes="100vw"
+          alt=""
+          className="absolute inset-0 -z-10 size-full object-cover"
+          fetchPriority="high"
+        />
       ) : (
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_80%_20%,rgba(236,28,46,0.28),transparent_55%),radial-gradient(ellipse_at_10%_90%,rgba(62,142,40,0.18),transparent_50%)]" />
       )}

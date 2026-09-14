@@ -247,8 +247,18 @@ export function Spinner({ className }: { className?: string }) {
   return <Loader2 className={cx('animate-spin text-fg-subtle', className)} aria-label="Loading" />;
 }
 
-/** Lazy image with a branded fallback so broken or missing photos never look broken. */
-export function SmartImage({ src, alt, className, ...props }: ImgHTMLAttributes<HTMLImageElement>) {
+/**
+ * Lazy image with a branded fallback so broken or missing photos never look broken.
+ * Pass `priority` for a likely-LCP image (e.g. the main photo above the fold) so it loads
+ * eagerly and at high priority instead of lazily like every other card/gallery thumbnail.
+ */
+export function SmartImage({
+  src,
+  alt,
+  className,
+  priority,
+  ...props
+}: ImgHTMLAttributes<HTMLImageElement> & { priority?: boolean }) {
   const [failed, setFailed] = useState(false);
   if (!src || failed) {
     return (
@@ -257,7 +267,18 @@ export function SmartImage({ src, alt, className, ...props }: ImgHTMLAttributes<
       </div>
     );
   }
-  return <img src={src} alt={alt} loading="lazy" decoding="async" onError={() => setFailed(true)} className={className} {...props} />;
+  return (
+    <img
+      src={src}
+      alt={alt}
+      loading={priority ? 'eager' : 'lazy'}
+      decoding={priority ? 'sync' : 'async'}
+      fetchPriority={priority ? 'high' : undefined}
+      onError={() => setFailed(true)}
+      className={className}
+      {...props}
+    />
+  );
 }
 
 export function EmptyState({ title, body, action, icon }: { title: string; body?: string; action?: ReactNode; icon?: ReactNode }) {

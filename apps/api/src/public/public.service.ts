@@ -1,8 +1,13 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { parseJson, startOfUtcDay } from '../common/utils';
+import { siteUrl } from '../common/security';
 import { PrismaService } from '../prisma/prisma.service';
 import type { EnquiryDto, TripQueryDto } from './public.dto';
+
+function escapeXml(value: string): string {
+  return value.replace(/[<>&'"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' })[c]!);
+}
 
 const PUBLISHED: Prisma.TripWhereInput = { isPublished: true };
 
@@ -131,7 +136,17 @@ export class PublicService {
     const [continents, stats] = await Promise.all([
       this.prisma.continent.findMany({
         orderBy: { sortOrder: 'asc' },
-        include: { countries: { orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }] } },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          tagline: true,
+          image: true,
+          countries: {
+            orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+            select: { id: true, name: true, slug: true, region: true, image: true, highlight: true },
+          },
+        },
       }),
       this.tripStatsByCountry(),
     ]);
@@ -399,6 +414,44 @@ export class PublicService {
       },
     });
     return { ok: true, reference: `PDN-${String(enquiry.id).padStart(5, '0')}` };
+  }
+
+  /**
+   * Every crawlable URL, for sitemap.xml — static routes plus every published trip/country/
+   * activity/page. Paths must match the actual React Router routes in apps/web/src/App.tsx.
+   */
+  private async getSitemapUrls(): Promise<{ path: string; lastmod?: Date }[]> {
+    const STATIC_PATHS = ['/', '/destinations', '/tours', '/activities', '/testimonials', '/contact', '/support'];
+    const [trips, countries, activities, pages] = await Promise.all([
+      this.prisma.trip.findMany({ where: PUBLISHED, select: { slug: true, updatedAt: true } }),
+      this.prisma.country.findMany({ select: { slug: true } }),
+      this.prisma.activityTag.findMany({ select: { slug: true } }),
+      this.prisma.page.findMany({ where: { isPublished: true }, select: { slug: true, updatedAt: true } }),
+    ]);
+    return [
+      ...STATIC_PATHS.map((path) => ({ path })),
+      ...trips.map((t) => ({ path: `/tours/${t.slug}`, lastmod: t.updatedAt })),
+      ...countries.map((c) => ({ path: `/destinations/${c.slug}` })),
+      ...activities.map((a) => ({ path: `/activities/${a.slug}` })),
+      ...pages.map((p) => ({ path: `/support/${p.slug}`, lastmod: p.updatedAt })),
+    ];
+  }
+
+  async getSitemapXml(): Promise<string> {
+    const urls = await this.getSitemapUrls();
+    const base = siteUrl();
+    const entries = urls
+      .map(({ path, lastmod }) => {
+        const loc = `<loc>${escapeXml(`${base}${path}`)}</loc>`;
+        const mod = lastmod ? `<lastmod>${lastmod.toISOString().slice(0, 10)}</lastmod>` : '';
+        return `<url>${loc}${mod}</url>`;
+      })
+      .join('');
+    return `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${entries}</urlset>`;
+  }
+
+  getRobotsTxt(): string {
+    return ['User-agent: *', 'Allow: /', 'Disallow: /admin', `Sitemap: ${siteUrl()}/sitemap.xml`, ''].join('\n');
   }
 
   async subscribe(email: string) {

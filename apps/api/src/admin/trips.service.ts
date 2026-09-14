@@ -3,20 +3,11 @@ import { Prisma } from '@prisma/client';
 import { parseJson, slugify } from '../common/utils';
 import { isSafeUrl } from '../common/validation';
 import { PrismaService } from '../prisma/prisma.service';
-import type { TripDto, TripSectionDto } from './trips.dto';
-
-export interface AdminTripQuery {
-  q?: string;
-  status?: string;
-  countryId?: string;
-  continentId?: string;
-  activityId?: string;
-  page?: string;
-  limit?: string;
-  sort?: string;
-}
+import type { AdminTripListQueryDto, TripDto, TripSectionDto } from './trips.dto';
 
 const MAX_SECTION_BYTES = 60_000;
+/** Duplicate-slug retries before giving up — generous enough that hitting the ceiling means something else is wrong. */
+const MAX_SLUG_ATTEMPTS = 20;
 
 /** Keeps section JSON small and strips any image URL that isn't safe to render. */
 function sanitizeSection(section: TripSectionDto) {
@@ -37,7 +28,7 @@ function sanitizeSection(section: TripSectionDto) {
 export class TripsAdminService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(query: AdminTripQuery) {
+  async list(query: AdminTripListQueryDto) {
     const where: Prisma.TripWhereInput = {};
     const and: Prisma.TripWhereInput[] = [];
     if (query.q?.trim()) {
@@ -47,13 +38,13 @@ export class TripsAdminService {
     if (query.status === 'published') and.push({ isPublished: true });
     if (query.status === 'draft') and.push({ isPublished: false });
     if (query.status === 'featured') and.push({ isFeatured: true });
-    if (query.countryId) and.push({ countryId: Number(query.countryId) });
-    if (query.continentId) and.push({ country: { continentId: Number(query.continentId) } });
-    if (query.activityId) and.push({ activities: { some: { activityId: Number(query.activityId) } } });
+    if (query.countryId != null) and.push({ countryId: query.countryId });
+    if (query.continentId != null) and.push({ country: { continentId: query.continentId } });
+    if (query.activityId != null) and.push({ activities: { some: { activityId: query.activityId } } });
     if (and.length) where.AND = and;
 
-    const limit = Math.min(Math.max(Number(query.limit) || 25, 1), 100);
-    const page = Math.max(Number(query.page) || 1, 1);
+    const limit = query.limit ?? 25;
+    const page = query.page ?? 1;
     const orderBy: Prisma.TripOrderByWithRelationInput =
       query.sort === 'title' ? { title: 'asc' }
       : query.sort === 'price' ? { priceFrom: 'asc' }
@@ -238,14 +229,10 @@ export class TripsAdminService {
 
   async duplicate(id: number) {
     const source = await this.get(id);
-    let slug = `${source.slug}-copy`;
-    for (let n = 2; await this.prisma.trip.findUnique({ where: { slug }, select: { id: true } }); n++) {
-      slug = `${source.slug}-copy-${n}`;
-    }
     const dto: TripDto = {
       ...source,
       title: `${source.title} (copy)`,
-      slug,
+      slug: `${source.slug}-copy`,
       location: source.location ?? undefined,
       bestSeason: source.bestSeason ?? undefined,
       badge: source.badge ?? undefined,
@@ -277,6 +264,17 @@ export class TripsAdminService {
         priceOverride: d.priceOverride,
       })),
     };
-    return this.create(dto);
+
+    // Atomic create-and-retry instead of a pre-check-then-create: two concurrent duplicate
+    // calls on the same trip would otherwise both see "-copy" as free and race each other,
+    // so the loser must recover from the unique-slug conflict rather than avoid it upfront.
+    for (let attempt = 0; ; attempt++) {
+      try {
+        return await this.create({ ...dto, slug: attempt === 0 ? dto.slug : `${dto.slug}-${attempt + 1}` });
+      } catch (err) {
+        const isSlugConflict = err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002';
+        if (!isSlugConflict || attempt >= MAX_SLUG_ATTEMPTS) throw err;
+      }
+    }
   }
 }

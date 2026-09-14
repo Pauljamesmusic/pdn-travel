@@ -1,4 +1,4 @@
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import { useApi } from '../lib/api';
 import type { HomeSettings, SiteData, SiteSettings } from '../lib/types';
 
@@ -31,14 +31,20 @@ const SiteContext = createContext<SiteContextValue | null>(null);
 
 export function SiteProvider({ children }: { children: ReactNode }) {
   const { data, loading } = useApi<SiteData>('/site', { ttl: 5 * 60_000 });
-  const value: SiteContextValue = {
-    site: { ...FALLBACK_SITE, ...(data?.settings.site ?? {}) },
-    home: data?.settings.home,
-    supportPages: data?.supportPages ?? [],
-    continents: data?.continents ?? [],
-    activities: data?.activities ?? [],
-    loading,
-  };
+  // Memoized like the sibling I18n/Theme/Currency providers — this wraps the whole router
+  // (see App.tsx), so a new object literal on every render would re-render every page that
+  // calls useSite() even when nothing it reads actually changed.
+  const value = useMemo<SiteContextValue>(
+    () => ({
+      site: { ...FALLBACK_SITE, ...(data?.settings.site ?? {}) },
+      home: data?.settings.home,
+      supportPages: data?.supportPages ?? [],
+      continents: data?.continents ?? [],
+      activities: data?.activities ?? [],
+      loading,
+    }),
+    [data, loading],
+  );
   return <SiteContext.Provider value={value}>{children}</SiteContext.Provider>;
 }
 

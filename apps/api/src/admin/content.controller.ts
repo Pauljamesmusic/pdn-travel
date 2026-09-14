@@ -128,7 +128,7 @@ export class TestimonialsAdminController {
 
   @Get()
   list() {
-    return this.prisma.testimonial.findMany({ orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }] });
+    return this.prisma.testimonial.findMany({ orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }], take: 1000 });
   }
 
   @Post()

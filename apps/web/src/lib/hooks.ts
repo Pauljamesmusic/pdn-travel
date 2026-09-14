@@ -1,4 +1,5 @@
 import { type RefObject, useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 export function useScrolled(threshold = 80) {
   const [scrolled, setScrolled] = useState(() => typeof window !== 'undefined' && window.scrollY > threshold);
@@ -62,19 +63,47 @@ export function usePrefersReducedMotion() {
   return useMediaQuery('(prefers-reduced-motion: reduce)');
 }
 
-export function useDocumentMeta(title?: string, description?: string | null) {
+function upsertMeta(attr: 'name' | 'property', key: string, content: string) {
+  let el = document.querySelector<HTMLMetaElement>(`meta[${attr}="${key}"]`);
+  if (!el) {
+    el = document.createElement('meta');
+    el.setAttribute(attr, key);
+    document.head.appendChild(el);
+  }
+  el.setAttribute('content', content);
+}
+
+/**
+ * Sets title/description plus the canonical link and Open Graph tags every route needs for
+ * crawlers and chat-app link previews (WhatsApp, Facebook) that don't execute JS — those only
+ * ever see whatever is in the initial HTML `<head>` for the URL they fetch, so this has to run
+ * on every route change, not just once. `image` is optional per page (e.g. a trip's cover photo).
+ */
+export function useDocumentMeta(title?: string, description?: string | null, image?: string | null) {
+  const { pathname } = useLocation();
   useEffect(() => {
-    if (title) document.title = title.includes('PDN Travel') ? title : `${title} | PDN Travel`;
-    if (description) {
-      let meta = document.querySelector<HTMLMetaElement>('meta[name="description"]');
-      if (!meta) {
-        meta = document.createElement('meta');
-        meta.name = 'description';
-        document.head.appendChild(meta);
-      }
-      meta.content = description;
+    const fullTitle = title ? (title.includes('PDN Travel') ? title : `${title} | PDN Travel`) : undefined;
+    if (fullTitle) {
+      document.title = fullTitle;
+      upsertMeta('property', 'og:title', fullTitle);
     }
-  }, [title, description]);
+    if (description) {
+      upsertMeta('name', 'description', description);
+      upsertMeta('property', 'og:description', description);
+    }
+    if (image) upsertMeta('property', 'og:image', new URL(image, window.location.origin).href);
+    upsertMeta('property', 'og:type', 'website');
+    upsertMeta('property', 'og:url', window.location.href);
+    upsertMeta('name', 'twitter:card', image ? 'summary_large_image' : 'summary');
+
+    let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.rel = 'canonical';
+      document.head.appendChild(canonical);
+    }
+    canonical.href = `${window.location.origin}${pathname}`;
+  }, [title, description, image, pathname]);
 }
 
 export function useCountdown(targetIso: string | undefined) {

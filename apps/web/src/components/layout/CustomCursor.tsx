@@ -1,21 +1,31 @@
 import { MousePointer2 } from 'lucide-react';
 import { useEffect, useRef } from 'react';
+import { usePrefersReducedMotion } from '../../lib/hooks';
 
 /** Replaces the native pointer with a glowing red cursor on fine-pointer (mouse) devices. */
 export function CustomCursor() {
   const dotRef = useRef<HTMLDivElement>(null);
   const iconRef = useRef<SVGSVGElement>(null);
+  const reducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
-    if (!window.matchMedia('(pointer: fine) and (hover: hover)').matches) return;
+    // Coarse/no-hover (touch) devices never see this; reduced-motion visitors get the native
+    // cursor instead of a pointer-tracking glow, which is exactly the effect that setting exists
+    // to suppress.
+    if (reducedMotion || !window.matchMedia('(pointer: fine) and (hover: hover)').matches) return;
 
     const dot = dotRef.current;
     const icon = iconRef.current;
     if (!dot || !icon) return;
 
-    document.documentElement.classList.add('custom-cursor-active');
-
+    // Don't hide the native cursor until the replacement has actually painted somewhere —
+    // otherwise the pointer is invisible from page load until the first mousemove.
+    let active = false;
     const move = (e: MouseEvent) => {
+      if (!active) {
+        active = true;
+        document.documentElement.classList.add('custom-cursor-active');
+      }
       dot.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
       dot.style.opacity = '1';
     };
@@ -41,7 +51,7 @@ export function CustomCursor() {
       window.removeEventListener('mousedown', down);
       window.removeEventListener('mouseup', up);
     };
-  }, []);
+  }, [reducedMotion]);
 
   return (
     <div ref={dotRef} className="pointer-events-none fixed left-0 top-0 z-[200] opacity-0" aria-hidden="true">

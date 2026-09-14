@@ -336,7 +336,7 @@ export function TourismDaySection({ home }: { home?: HomeSettings }) {
             ) : (
               <div className="grid grid-cols-4 gap-2 sm:gap-3" role="timer" aria-label={event.countdownLabel}>
                 {tiles.map((tile) => (
-                  <div key={tile.label} className="flex w-[72px] flex-col items-center gap-0.5 rounded-[20px] border border-white/15 bg-white/5 pb-3.5 pt-4 backdrop-blur-md sm:w-[88px]">
+                  <div key={tile.label} className="mx-auto flex w-full max-w-[88px] flex-col items-center gap-0.5 rounded-[20px] border border-white/15 bg-white/5 pb-3.5 pt-4 backdrop-blur-md">
                     <span className="font-serif text-[34px] leading-[44px] tabular-nums text-fg sm:text-[40px]">{String(tile.value).padStart(2, '0')}</span>
                     <span className="text-caps text-fg-muted">{tile.label}</span>
                   </div>

@@ -16,7 +16,7 @@ import { Link } from 'react-router-dom';
 import { Icon, ICON_NAMES } from '../components/Icon';
 import { Button, SmartImage, Spinner } from '../components/ui';
 import { cx } from '../lib/format';
-import { useBodyLock, useFocusTrap } from '../lib/hooks';
+import { useBodyLock, useFocusTrap, useOnClickOutside } from '../lib/hooks';
 import { type MediaItem, moveItem, uploadFiles, useAdminApi } from './api';
 
 /* ─── Layout pieces ────────────────────────────────────────────────────────── */
@@ -90,11 +90,11 @@ export function TextArea({ label, hint, error, className, rows = 4, ...props }: 
   );
 }
 
-export function SelectInput({ label, hint, className, children, ...props }: SelectHTMLAttributes<HTMLSelectElement> & { label: string; hint?: string }) {
+export function SelectInput({ label, hint, error, className, children, ...props }: SelectHTMLAttributes<HTMLSelectElement> & { label: string; hint?: string; error?: string }) {
   const id = useId();
   return (
-    <Field label={label} hint={hint} className={className} htmlFor={props.id ?? id}>
-      <select id={props.id ?? id} className={cx(controlClass, 'h-11')} {...props}>
+    <Field label={label} hint={hint} error={error} className={className} htmlFor={props.id ?? id}>
+      <select id={props.id ?? id} className={cx(controlClass, 'h-11', error && 'border-red-500')} aria-invalid={!!error} {...props}>
         {children}
       </select>
     </Field>
@@ -183,8 +183,10 @@ export function StringListEditor({ items, onChange, placeholder = 'Add an item',
 
 export function IconPicker({ value, onChange, label = 'Icon' }: { value: string; onChange: (v: string) => void; label?: string }) {
   const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useOnClickOutside(ref, () => setOpen(false), open);
   return (
-    <div className="relative flex flex-col gap-1.5">
+    <div ref={ref} className="relative flex flex-col gap-1.5" onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}>
       <p className="text-meta font-semibold text-fg">{label}</p>
       <button type="button" onClick={() => setOpen((v) => !v)} className={cx(controlClass, 'flex h-11 items-center gap-2')} aria-expanded={open}>
         <Icon name={value} size={18} /> <span className="truncate">{value || 'Choose'}</span>
