@@ -22,7 +22,7 @@ export const siteSettings = {
 };
 
 export const homeSettings = {
-  announcement: { tag: 'New', text: 'World Tourism Day 2026 — PDN grand opening', link: '#tourism-day' },
+  announcement: { tag: 'New', text: 'World Tourism Day 2026 — PDN grand opening', link: '/support/world-tourism-day-2026' },
   heroMarker: { eyebrow: 'You are here', text: 'Earth — 195 countries to explore' },
   heroSlides: [
     {
@@ -353,6 +353,72 @@ export const pages: {
         ],
       },
       { type: 'richText', heading: 'More coming soon', body: 'New events are added here as they are announced. Subscribe to our newsletter to hear first.' },
+    ],
+  },
+  {
+    slug: 'world-tourism-day-2026',
+    title: 'Happy World Tourism Day! 🌎✨',
+    eyebrow: 'World Tourism Day 2026',
+    subtitle: 'Explore with ❤️. Cherish our 🌍.',
+    heroImage: '',
+    navGroup: null,
+    sortOrder: 8,
+    metaDescription: 'PDN Travel’s World Tourism Day 2026 message — Love, Protection & Peace. Watch our grand-opening film and read our appeal for responsible, sustainable travel.',
+    sections: [
+      { type: 'video', video: '/media/world-tourism-day-2026.mp4', caption: 'Happy World Tourism Day 2026 — PDN grand opening' },
+      {
+        type: 'richText',
+        heading: 'Love, Protection & Peace',
+        body: 'We all want a better future for our children. But that future is only possible if we take care of our planet today.\n\nEarth is our home. It feeds us, shelters us, and gives life to every living being. If we protect Earth, Earth will protect us.\n\nThis World Tourism Day, let us travel with responsibility.',
+      },
+      {
+        type: 'list',
+        heading: '1. Choose Sustainable Travel',
+        items: [
+          'Move from fuel to electric vehicles',
+          'Support local transport like auto-rickshaws and bicycles',
+          'Say no to plastic — reduce waste, reuse and recycle',
+        ],
+      },
+      { type: 'richText', heading: '2. Care for People and Planet', body: 'By 2050, there will be 9.8 billion people on Earth. We have a bigger responsibility now.' },
+      {
+        type: 'list',
+        items: [
+          'Every child should get education',
+          'Every hungry person should get food',
+          'Every differently-abled person should live with comfort and dignity',
+        ],
+      },
+      { type: 'richText', body: 'True humanity is beyond religion and culture. It is about caring for each other and for nature.' },
+      {
+        type: 'richText',
+        heading: '3. Protect What We Have',
+        body: 'Deforestation, pollution, and waste are causing climate change, dirty air, and water shortage.\n\nThe truth is simple: nature does not need us — we need nature.',
+      },
+      {
+        type: 'list',
+        items: ['Plant more trees', 'Save water and protect our rivers', 'Protect our farmland', 'Choose eco-tourism and sustainable tourism'],
+      },
+      {
+        type: 'cards',
+        heading: 'Our Promise: Love, Protection & Peace',
+        items: [
+          { icon: 'heart', title: 'Love', body: 'Empathy for all living beings.' },
+          { icon: 'shield-check', title: 'Protection', body: 'Saving our environment through good actions.' },
+          { icon: 'bird', title: 'Peace', body: 'Solving problems together through unity, not war.' },
+        ],
+      },
+      { type: 'quote', text: 'We do not need war, we need warm hugs.', attribution: 'Team PDN Travel' },
+      {
+        type: 'richText',
+        body: 'War only brings pain and loss. Every human life is precious and irreplaceable. Let us all live and let others live.\n\nOn this World Tourism Day, let us join hands. Let us be change-makers, protectors, and peacekeepers. Let us make our Earth as clean, vibrant, and beautiful as we want our future to be.\n\nTravel with Love. Travel with Respect. Travel with Peace.\n\nProtect the Earth: keep it clean, green and full of love — so future generations can enjoy it too.\n\nTeam PDN Travel',
+      },
+      { type: 'divider' },
+      {
+        type: 'richText',
+        heading: 'Welcome to PDN Travel — The Peace Destination Nepal Pvt. Ltd.',
+        body: 'The Peace Destination Nepal Pvt. Ltd. initiative has not only been comprehensively completed but it also continues to evolve dynamically. This initiative embodies a genuine plan — providing real information, tours and travel packages, and their itineraries and policies, in a constructive manner.\n\nThis is not the end, but the beginning of a series of remarkable developments, with much more to come. The journey is boundless, the experiences are endless, and the wonders limitless.\n\nThank you for your patience, and for visiting us!\n\nTeam PDN Travel\nThe Peace Destination Nepal Pvt. Ltd.\nwww.pdntravel.com',
+      },
     ],
   },
 ];

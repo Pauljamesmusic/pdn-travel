@@ -74,8 +74,11 @@ function Block({ block }: { block: PageBlock }) {
           <Heading heading={str(block.heading)} intro={str(block.intro)} />
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {arr<{ icon: string; title: string; body: string }>(block.items).map((item) => (
-              <div key={item.title} className="flex flex-col gap-4 rounded-lg border border-line bg-surface p-6">
-                <span className="flex size-[52px] items-center justify-center rounded-md bg-brand-subtle text-fg-brand">
+              <div
+                key={item.title}
+                className="group flex flex-col gap-4 rounded-lg border border-line bg-surface p-6 transition-[transform,box-shadow,border-color] duration-200 ease-out hover:-translate-y-1 hover:border-line-brand hover:shadow-lg"
+              >
+                <span className="flex size-[52px] items-center justify-center rounded-md bg-brand-subtle text-fg-brand transition-colors duration-200 group-hover:bg-brand group-hover:text-ink-0">
                   <Icon name={item.icon} size={24} />
                 </span>
                 <h3 className="text-h4 text-fg">{item.title}</h3>
@@ -233,6 +236,27 @@ function Block({ block }: { block: PageBlock }) {
           </div>
         </section>
       );
+
+    case 'video': {
+      const src = str(block.video);
+      if (!src) return null;
+      return (
+        <section className="flex flex-col gap-4">
+          <video
+            src={src}
+            poster={str(block.image) || undefined}
+            controls
+            playsInline
+            preload="metadata"
+            className="aspect-video w-full rounded-xl bg-black shadow-lg"
+          />
+          {str(block.caption) && <p className="text-center text-meta text-fg-subtle">{str(block.caption)}</p>}
+        </section>
+      );
+    }
+
+    case 'divider':
+      return <hr className="border-line" />;
 
     case 'gallery':
       return (

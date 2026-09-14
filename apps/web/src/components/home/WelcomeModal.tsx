@@ -46,7 +46,7 @@ export function WelcomeModal() {
         aria-modal="true"
         aria-label="Welcome to PDN Travel"
         onMouseDown={(e) => e.stopPropagation()}
-        className="relative w-full max-w-sm"
+        className="relative w-full max-w-[260px] sm:max-w-sm"
       >
         <button
           type="button"
@@ -59,7 +59,7 @@ export function WelcomeModal() {
         <img
           src="/media/pdn-welcome.jpg"
           alt="Welcome to PDN Travels — Atithi Devo Bhava"
-          className="max-h-[85vh] w-full rounded-lg object-cover shadow-lg"
+          className="max-h-[60vh] w-full rounded-lg object-cover shadow-lg sm:max-h-[85vh]"
         />
       </div>
     </div>,

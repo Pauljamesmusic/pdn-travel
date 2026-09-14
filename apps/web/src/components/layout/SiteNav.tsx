@@ -161,7 +161,7 @@ function SupportMenu({ label, links, active }: { label: string; links: { to: str
   );
 }
 
-export function LanguageMenu({ compact = false, direction = 'down' }: { compact?: boolean; direction?: 'down' | 'up' }) {
+export function LanguageMenu({ compact = false, direction = 'down', align = 'end' }: { compact?: boolean; direction?: 'down' | 'up'; align?: 'start' | 'end' }) {
   const { lang, setLang, t } = useI18n();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -190,7 +190,8 @@ export function LanguageMenu({ compact = false, direction = 'down' }: { compact?
           role="listbox"
           aria-label={t('footer.language')}
           className={cx(
-            'absolute end-0 z-10 w-48 overflow-hidden rounded-md border border-line bg-surface p-1.5 shadow-lg',
+            'absolute z-10 w-48 overflow-hidden rounded-md border border-line bg-surface p-1.5 shadow-lg',
+            align === 'start' ? 'start-0' : 'end-0',
             direction === 'up' ? 'bottom-full mb-2' : 'top-full mt-2',
           )}
         >
@@ -222,7 +223,7 @@ export function LanguageMenu({ compact = false, direction = 'down' }: { compact?
 }
 
 /** Switches every price on the site (cards, trip pages, booking) into USD, INR, AED or NPR. */
-export function CurrencyMenu({ compact = false, direction = 'down' }: { compact?: boolean; direction?: 'down' | 'up' }) {
+export function CurrencyMenu({ compact = false, direction = 'down', align = 'end' }: { compact?: boolean; direction?: 'down' | 'up'; align?: 'start' | 'end' }) {
   const { currency, setCurrency } = useCurrency();
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -252,7 +253,8 @@ export function CurrencyMenu({ compact = false, direction = 'down' }: { compact?
           role="listbox"
           aria-label={t('footer.currency')}
           className={cx(
-            'absolute end-0 z-10 w-48 overflow-hidden rounded-md border border-line bg-surface p-1.5 shadow-lg',
+            'absolute z-10 w-48 overflow-hidden rounded-md border border-line bg-surface p-1.5 shadow-lg',
+            align === 'start' ? 'start-0' : 'end-0',
             direction === 'up' ? 'bottom-full mb-2' : 'top-full mt-2',
           )}
         >
@@ -364,8 +366,8 @@ function MobileDrawer({ onClose, supportLinks }: { onClose: () => void; supportL
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <LanguageMenu />
-            <CurrencyMenu />
+            <LanguageMenu direction="up" align="start" />
+            <CurrencyMenu direction="up" align="start" />
             <ThemeButton />
           </div>
 

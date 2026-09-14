@@ -88,6 +88,17 @@ export const BLOCK_DEFS: Record<string, BlockDef> = {
     },
   },
   gallery: { label: 'Gallery', hint: 'Grid of photos', icon: 'camera', fields: [HEADING], gallery: true },
+  video: {
+    label: 'Video',
+    hint: 'Full-width video player',
+    icon: 'video',
+    fields: [
+      { key: 'video', label: 'Video URL', placeholder: '/media/tourism-day-2026.mp4', hint: 'Path to an uploaded video file.', wide: true },
+      { key: 'image', label: 'Poster image', kind: 'image', wide: true },
+      { key: 'caption', label: 'Caption', wide: true },
+    ],
+  },
+  divider: { label: 'Divider', hint: 'A thin line to separate sections', icon: 'minus', fields: [] },
   cta: {
     label: 'Call to action',
     hint: 'Dark banner with a button',
